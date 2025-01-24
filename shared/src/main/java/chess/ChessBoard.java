@@ -100,16 +100,7 @@ public class ChessBoard {
         board[0][4] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
         board[7][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
     }
-//    public static void main(String[] args) {
-//        ChessBoard chessBoard = new ChessBoard();
-//        printChessBoard(chessBoard);
-//    }
-//
-//    /**
-//     * Prints the chessboard in a readable format.
-//     *
-//     * @param chessBoard The chessboard to print.
-//     */
+
     public static void printChessBoard(ChessBoard chessBoard) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {

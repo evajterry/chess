@@ -12,6 +12,4 @@ public interface ChessPieceMovesCalculator {
      * @return A collection of valid moves
      */
     Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position);
-
-//    public Collection<ChessMove> KingMoveCalculator(ChessBoard board, ChessPosition position, ChessPiece piece);
 }
