@@ -6,7 +6,7 @@ import java.util.Collection;
 public class KnightMoveCalculator implements ChessPieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        Collection<ChessMove> validMoves = new ArrayList<>(); // does declaring a type in line 8 instantiate anything?
+        Collection<ChessMove> validMoves = new ArrayList<>();
 
         int[] rowOffsets = {1, 2, 2, 1, -1, -2, -2, -1};
         int[] colOffsets = {-2, -1, 1, 2, 2, 1, -1, -2};
@@ -17,14 +17,13 @@ public class KnightMoveCalculator implements ChessPieceMovesCalculator {
         for (int i = 0; i < rowOffsets.length; i++) {
 
             int newRow = position.getRow() + rowOffsets[i];
-            int newCol = position.getColumn() + colOffsets[i]; // this could be wrong
+            int newCol = position.getColumn() + colOffsets[i];
 
             if (isPositionValid(newRow - 1, newCol - 1)) {
                 ChessPosition newPosition = new ChessPosition(newRow, newCol);
                 ChessPiece targetPiece = board.getPiece(newPosition);
 
-                if (targetPiece == null || targetPiece.getTeamColor() != teamColor) { // the board for test 1
-                    // the board for test is not empty - I think that's tripping the test
+                if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
                     validMoves.add(new ChessMove(position, newPosition, null));
                 }
             }
