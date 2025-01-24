@@ -136,21 +136,21 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         ChessPosition lowerRightPosition = new ChessPosition(row - 1, col + 1);
         ChessPosition lowerLeftPosition = new ChessPosition(row - 1, col - 1);
 
-        if(blackDiagonalRightMovementPromotion(board, position, piece, possibleMoves, row, col, lowerRightPosition)) {
+        if(blackDiagonalRightMovementPromotion(board, piece, row, col, lowerRightPosition)) {
             setPromotionPiece(position, lowerRightPosition, possibleMoves);
-        } else if (blackDiagonalRightMovement(board, position, piece, possibleMoves, row, col, lowerRightPosition)) {
+        } else if (blackDiagonalRightMovement(board, piece, row, col, lowerRightPosition)) {
             possibleMoves.add(new ChessMove(position, lowerRightPosition, null));
         }
 
-        if(blackDiagonalLeftMovementPromotion(board, position, piece, possibleMoves, row, col, lowerLeftPosition)) {
+        if(blackDiagonalLeftMovementPromotion(board, piece, row, col, lowerLeftPosition)) {
             setPromotionPiece(position, lowerLeftPosition, possibleMoves);
-        } else if (blackDiagonalLeftMovement(board, position, piece, possibleMoves, row, col, lowerLeftPosition)) {
+        } else if (blackDiagonalLeftMovement(board, piece, row, col, lowerLeftPosition)) {
             possibleMoves.add(new ChessMove(position, lowerLeftPosition, null));
         }
 
     }
 
-    private boolean blackDiagonalLeftMovement(ChessBoard board, ChessPosition position, ChessPiece piece, Collection<ChessMove> possibleMoves, int row, int col, ChessPosition lowerLeftPosition) {
+    private boolean blackDiagonalLeftMovement(ChessBoard board, ChessPiece piece, int row, int col, ChessPosition lowerLeftPosition) {
         if (isPositionValid(row - 1, col - 1)) { // check this
             ChessPiece promotionPiece = board.getPiece(lowerLeftPosition);
             if (promotionPiece != null && promotionPiece.getPieceType() != null) {
@@ -161,7 +161,7 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         return false;
     }
 
-    private boolean blackDiagonalLeftMovementPromotion(ChessBoard board, ChessPosition position, ChessPiece piece, Collection<ChessMove> possibleMoves, int row, int col, ChessPosition lowerLeftPosition) {
+    private boolean blackDiagonalLeftMovementPromotion(ChessBoard board, ChessPiece piece, int row, int col, ChessPosition lowerLeftPosition) {
         if (isPositionValid(row - 1, col - 1)) {
             ChessPiece promotionPiece = board.getPiece(lowerLeftPosition);
             if (promotionPiece != null) {
@@ -175,7 +175,7 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         return false;
     }
 
-    private boolean blackDiagonalRightMovement(ChessBoard board, ChessPosition position, ChessPiece piece, Collection<ChessMove> possibleMoves, int row, int col, ChessPosition lowerRightPosition) {
+    private boolean blackDiagonalRightMovement(ChessBoard board, ChessPiece piece, int row, int col, ChessPosition lowerRightPosition) {
         if (isPositionValid(row - 1, col + 1)) {
             ChessPiece promotionPiece = board.getPiece(lowerRightPosition);
             if (promotionPiece != null && promotionPiece.getPieceType() != null) {
@@ -186,12 +186,12 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         return false;
     }
 
-    private boolean blackDiagonalRightMovementPromotion(ChessBoard board, ChessPosition position, ChessPiece piece, Collection<ChessMove> possibleMoves, int row, int col, ChessPosition lowerRightPosition) {
+    private boolean blackDiagonalRightMovementPromotion(ChessBoard board, ChessPiece piece, int row, int col, ChessPosition lowerRightPosition) {
         if (isPositionValid(row - 1, col + 1)) {
             ChessPiece promotionPiece = board.getPiece(lowerRightPosition);
             if (promotionPiece != null && promotionPiece.getPieceType() != null) {
                 ChessGame.TeamColor attackingColor = piece.getTeamColor();
-                if (board.getPiece(lowerRightPosition).getTeamColor() != attackingColor) { // check this
+                if (board.getPiece(lowerRightPosition).getTeamColor() != attackingColor) {
                     // check if it needs to be promoted too
                     return row == 0;
                 }
