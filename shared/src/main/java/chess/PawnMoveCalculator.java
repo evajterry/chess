@@ -201,7 +201,7 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
     }
 
     private void forwardBlackMovement(ChessBoard board, ChessPosition position, ChessPiece piece, Collection<ChessMove> possibleMoves, int row, int col) {
-        if (isPositionValid(row - 1, col - 1)) {
+        if (isPositionValid(row, col)) {
             ChessPosition newPosition = new ChessPosition(row - 1, col);
             ChessPiece newPiece = board.getPiece(newPosition);
             // check if the piece has moved before
@@ -213,7 +213,8 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
                 if (newPiecePlusOne == null) {
                     possibleMoves.add(new ChessMove(position, newPositionPlusOne, null));
                 }
-            } else if (isPositionValid(row - 2, col - 1) && newPiece == null) { // check if it's made it across the board
+
+            } else if (isPositionValid(row - 1, col) && newPiece == null) { // check if it's made it across the board
                 if (row == 2) {
                     setPromotionPiece(position, newPosition, possibleMoves);
                 } else { // move one forward
@@ -224,6 +225,6 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
     }
 
     private boolean isPositionValid(int row, int col) {
-        return row >= 0 && row < 8 && col >= 0 && col < 8;
+        return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
 }
