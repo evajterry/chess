@@ -6,7 +6,6 @@ import java.util.Collection;
 public class RookMoveCalculator implements ChessPieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        // Add logic to calculate queen's moves
         Collection<ChessMove> validMoves = new ArrayList<>(); // does declaring a type in line 8 instantiate anything?
 
         ChessPiece piece = board.getPiece(position);
