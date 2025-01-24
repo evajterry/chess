@@ -1,8 +1,17 @@
 package chess;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public interface ChessPieceMovesCalculator {
-    /*/
-    @param myParam
+    /**
+     * Calculates all valid moves for a piece on the board at a given position.
+     *
+     * @param board     The current chessboard state
+     * @param position  The position of the piece to calculate moves for
+     * @return A collection of valid moves
      */
-    void calculateMoves(ChessBoard board);
+    Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position);
+
+//    public Collection<ChessMove> KingMoveCalculator(ChessBoard board, ChessPosition position, ChessPiece piece);
 }
