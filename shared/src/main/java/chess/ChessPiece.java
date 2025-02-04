@@ -69,6 +69,7 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPieceMovesCalculator moves = switch(getPieceType()) {
             case QUEEN -> new QueenMoveCalculator(); // bad type in switch expression

@@ -1,4 +1,6 @@
 package chess;
+import java.util.ArrayList;
+import java.util.Set;
 
 import java.util.Collection;
 
@@ -9,25 +11,40 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    private Set<TeamColor> turnTracking;
+    private TeamColor team; // match to line in setTeamTurn
+    private ChessBoard board;
 
     public ChessGame() {
-
+        this.board = new ChessBoard();
+        board.resetBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        if (turnTracking.contains(TeamColor.WHITE)) {
+            return TeamColor.BLACK;
+
+        } else if (turnTracking.contains(TeamColor.BLACK)) {
+            return TeamColor.WHITE;
+        } else {
+            throw new RuntimeException("WHITE or BLACK not returned");
+        }
     }
 
     /**
-     * Set's which teams turn it is
+     * Sets which teams turn it is
      *
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        if (getTeamTurn() == TeamColor.WHITE) {
+            team = TeamColor.WHITE;
+        } else if (getTeamTurn() == TeamColor.BLACK) {
+            team = TeamColor.BLACK;
+        }
     }
 
     /**
@@ -46,17 +63,40 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        ChessBoard board = getBoard();
+        ChessPiece startPiece = board.getPiece(startPosition);
+        // kings are different
+        if (startPiece == null) {
+            return validMoves;
+        } else if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            calculateKingMoves(startPiece, board, startPosition, validMoves);
+        } else {
+            validMoves.addAll(startPiece.pieceMoves(board, startPosition)); // not sure about this line
+        }
+        return validMoves;
+    }
+
+    private void calculateKingMoves(ChessPiece startPiece, ChessBoard board, ChessPosition startPosition, Collection<ChessMove> validMoves) {
+
     }
 
     /**
      * Makes a move in a chess game
      *
-     * @param move chess move to preform
+     * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition targetPosition =  move.getEndPosition();
+        ChessPiece targetPiece = board.getPiece(targetPosition);
+        ChessPiece movingPiece = board.getPiece(move.getStartPosition());
+
+        if (targetPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (isInStalemate(targetPiece.getTeamColor())) {
+                throw new InvalidMoveException("This move is stalemate");
+            }
+        }
     }
 
     /**
@@ -105,6 +145,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }
