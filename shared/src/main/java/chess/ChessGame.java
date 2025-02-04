@@ -68,17 +68,50 @@ public class ChessGame {
         ChessPiece startPiece = board.getPiece(startPosition);
         // kings are different
         if (startPiece == null) {
-            return validMoves;
-        } else if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
-            calculateKingMoves(startPiece, board, startPosition, validMoves);
-        } else {
-            validMoves.addAll(startPiece.pieceMoves(board, startPosition)); // not sure about this line
+            return null;
         }
+
+        Collection<ChessMove> possibleMoves = startPiece.pieceMoves(board, startPosition);
+
+        for (ChessMove move : possibleMoves) {
+            if (isLegalMove(board, move, startPiece.getTeamColor())){
+                validMoves.add(move);
+            }
+        }
+
         return validMoves;
     }
 
-    private void calculateKingMoves(ChessPiece startPiece, ChessBoard board, ChessPosition startPosition, Collection<ChessMove> validMoves) {
+    private boolean isLegalMove(ChessBoard board, ChessMove move, TeamColor teamColor) {
+        // copy board
+        ChessBoard boardCopy = cloneChessBoard(board);
+        // execute the move on the temporary board
+        ChessPosition startPosition = move.getStartPosition();
+        if (boardCopy.getPiece(startPosition) == null) {
+            return false;
+        } else if (boardCopy.getPiece(startPosition).getPieceType() == ChessPiece.PieceType.KING) {
+            if (!isInCheck(teamColor) || !isInCheckmate(teamColor) || !isInStalemate(teamColor)) {
+                return true;
+            }
+        } else {
+            return false;
+        }
 
+        return !isInCheck(teamColor);
+    }
+
+    private ChessBoard cloneChessBoard(ChessBoard board) {
+        // can I do the cloning stuff here?
+        ChessBoard boardCopy = new ChessBoard();
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPosition pos = new ChessPosition(row, col);
+                if (board.getPiece(pos) != null) {
+                    boardCopy.addPiece(pos, board.getPiece(pos));
+                }
+            }
+        }
+        return boardCopy;
     }
 
     /**
@@ -92,10 +125,9 @@ public class ChessGame {
         ChessPiece targetPiece = board.getPiece(targetPosition);
         ChessPiece movingPiece = board.getPiece(move.getStartPosition());
 
-        if (targetPiece.getPieceType() == ChessPiece.PieceType.KING) {
-            if (isInStalemate(targetPiece.getTeamColor())) {
-                throw new InvalidMoveException("This move is stalemate");
-            }
+        if (movingPiece != null) {
+            board.addPiece(targetPosition, movingPiece);
+            board.addPiece(move.getStartPosition(), null); // erases the moving piece from start pos
         }
     }
 
@@ -106,7 +138,36 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition kingPosition = findKingPosition(board, teamColor);
+        for (int row = 1; row <=8; row++) {
+            for (int col = 1; col <=8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(position);
+
+                if (piece != null && piece.getTeamColor() != teamColor) {
+                    Collection<ChessMove> possibleMoves = piece.pieceMoves(board, position);
+                    for (ChessMove move : possibleMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true; // a piece's end position is where the king is
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private ChessPosition findKingPosition(ChessBoard board, TeamColor teamColor) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition newPosition = new ChessPosition(row, col);
+                ChessPiece newPiece = board.getPiece(newPosition);
+                if (newPiece != null && newPiece.getTeamColor() == teamColor && newPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                    return newPosition;
+                }
+            }
+        }
+        return null; // king is missing if this gets returned. where hast thou gone dear king
     }
 
     /**
