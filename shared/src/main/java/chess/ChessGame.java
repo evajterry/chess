@@ -247,9 +247,9 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // should check that they're not currently in check
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
+        if (isInCheck(teamColor)) { return false; }
+        Collection<ChessMove> allValidMoves = new ArrayList<>();
+
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -257,22 +257,12 @@ public class ChessGame {
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     // should I check for valid moves here?
                     Collection<ChessMove> validMoves = validMoves(position);
-                    if (!validMoves.isEmpty()) return false;
+                    allValidMoves.addAll(validMoves);
                 }
             }
         }
-        return true;
+        return allValidMoves.isEmpty();
     }
-
-//    private boolean moveMakesKingBeInCheck(ChessMove move, ChessBoard board, TeamColor teamColor) {
-//        ChessBoard newBoard = cloneChessBoard(board);
-//        ChessPosition startPosition = move.getStartPosition();
-//        ChessPosition endPosition = move.getEndPosition();
-//        ChessPiece piece = board.getPiece(startPosition);
-//        newBoard.addPiece(endPosition, piece);
-//        newBoard.addPiece(startPosition, null);
-//        return isInCheck(teamColor);
-//    }
 
     /**
      * Sets this game's chessboard with a given board
