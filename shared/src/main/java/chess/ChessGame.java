@@ -135,7 +135,7 @@ public class ChessGame {
 
         ChessPiece.PieceType promotionType = move.getPromotionPiece();
 
-        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) { // i need to figure out how to do different promotion types
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
             if (piece.getTeamColor() == TeamColor.BLACK && endPosition.getRow() == 1) {
                 ChessPiece promotionPiece = new ChessPiece(TeamColor.BLACK, promotionType);
                 board.addPiece(endPosition, promotionPiece);
@@ -156,8 +156,8 @@ public class ChessGame {
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
-    public boolean isInCheckWithBoardCopy(TeamColor teamColor, ChessBoard boardCopy) { // Do I want this to reference board copy?
-        ChessPosition kingPosition = findKingPosition(boardCopy, teamColor); // should I put board copy in the constructor?
+    public boolean isInCheckWithBoardCopy(TeamColor teamColor, ChessBoard boardCopy) {
+        ChessPosition kingPosition = findKingPosition(boardCopy, teamColor);
         for (int row = 1; row <=8; row++) {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -182,8 +182,8 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
-    public boolean isInCheck(TeamColor teamColor) { // Do I want this to reference board copy?
-        ChessPosition kingPosition = findKingPosition(board, teamColor); // should I put board copy in the constructor?
+    public boolean isInCheck(TeamColor teamColor) {
+        ChessPosition kingPosition = findKingPosition(board, teamColor);
         for (int row = 1; row <=8; row++) {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -229,7 +229,6 @@ public class ChessGame {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
                 if (piece != null && piece.getTeamColor() == teamColor) {
-                    // should I check for valid moves here?
                     Collection<ChessMove> validMoves = validMoves(position);
                     if (!validMoves.isEmpty()) return false;
                 }
