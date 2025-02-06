@@ -54,7 +54,7 @@ public class ChessGame {
         Collection<ChessMove> validMoves = new ArrayList<>();
         ChessBoard board = getBoard();
         ChessPiece startPiece = board.getPiece(startPosition);
-        // kings are different
+        // kings are different ?
         if (startPiece == null) { return null; }
 
         Collection<ChessMove> possibleMoves = startPiece.pieceMoves(board, startPosition);
@@ -80,7 +80,7 @@ public class ChessGame {
         board.addPiece(endPosition, movingPiece);
         board.addPiece(startPosition, null);
 
-        return !isInCheck(teamColor);
+        return !isInCheckWithBoardCopy(teamColor, board); // need to make sure the board !isInCheck is looking at the boardCopy
     }
 
     private ChessBoard cloneChessBoard(ChessBoard board) {
@@ -133,10 +133,47 @@ public class ChessGame {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
 
-        board.addPiece(endPosition, piece);
-        board.addPiece(startPosition, null);
+        ChessPiece.PieceType promotionType = move.getPromotionPiece();
+
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) { // i need to figure out how to do different promotion types
+            if (piece.getTeamColor() == TeamColor.BLACK && endPosition.getRow() == 1) {
+                ChessPiece promotionPiece = new ChessPiece(TeamColor.BLACK, promotionType);
+                board.addPiece(endPosition, promotionPiece);
+                board.addPiece(startPosition, null);
+            } else if (piece.getTeamColor() == TeamColor.WHITE && endPosition.getRow() == 8) {
+                ChessPiece promotionPiece = new ChessPiece(TeamColor.WHITE, promotionType);
+                board.addPiece(endPosition, promotionPiece);
+                board.addPiece(startPosition, null);
+            } else {
+                board.addPiece(endPosition, piece);
+                board.addPiece(startPosition, null);
+            }
+        } else {
+            board.addPiece(endPosition, piece);
+            board.addPiece(startPosition, null);
+        }
 
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+    }
+
+    public boolean isInCheckWithBoardCopy(TeamColor teamColor, ChessBoard boardCopy) { // Do I want this to reference board copy?
+        ChessPosition kingPosition = findKingPosition(boardCopy, teamColor); // should I put board copy in the constructor?
+        for (int row = 1; row <=8; row++) {
+            for (int col = 1; col <=8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = boardCopy.getPiece(position);
+
+                if (piece != null && piece.getTeamColor() != teamColor) {
+                    Collection<ChessMove> possibleMoves = piece.pieceMoves(boardCopy, position);
+                    for (ChessMove move : possibleMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true; // a piece's end position is where the king is
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
