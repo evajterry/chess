@@ -108,7 +108,6 @@ public class ChessGame {
         // this should call valid moves - don't call make move inside of isLegalMove
         // should check whose turn it is
         // helper function to actually make the move, do error checking in makeMove
-
         ChessBoard board = getBoard();
         ChessPiece piece = board.getPiece(move.getStartPosition());
 
@@ -132,7 +131,6 @@ public class ChessGame {
         
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
-
         ChessPiece.PieceType promotionType = move.getPromotionPiece();
 
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
@@ -162,7 +160,6 @@ public class ChessGame {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = boardCopy.getPiece(position);
-
                 if (piece != null && piece.getTeamColor() != teamColor) {
                     Collection<ChessMove> possibleMoves = piece.pieceMoves(boardCopy, position);
                     for (ChessMove move : possibleMoves) {
@@ -188,7 +185,6 @@ public class ChessGame {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-
                 if (piece != null && piece.getTeamColor() != teamColor) {
                     Collection<ChessMove> possibleMoves = piece.pieceMoves(board, position);
                     for (ChessMove move : possibleMoves) {
@@ -248,7 +244,6 @@ public class ChessGame {
         // should check that they're not currently in check
         if (isInCheck(teamColor)) { return false; }
         Collection<ChessMove> allValidMoves = new ArrayList<>();
-
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <=8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
