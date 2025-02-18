@@ -16,7 +16,7 @@ public class UserAccess implements UserDAO{
         return u.username();
     }
     @Override
-    public void clearAll() {
+    public void deleteAllData() {
         users.clear();
     }
 }

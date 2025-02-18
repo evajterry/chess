@@ -1,6 +1,7 @@
 
 package server;
 
+import handlers.DeleteAllData;
 import model.AuthData;
 import org.eclipse.jetty.server.Authentication;
 import service.AuthService;
@@ -14,23 +15,27 @@ public class Server {
     private AuthService authService;
     private GameService gameService;
     private UserService userService;
+    private final DeleteAllData deleteAllDataHandler;
 
-    public ChessServer(AuthService authService, GameService gameService, UserService userService) {
+    public Server() {
         this.authService = authService;
         this.gameService = gameService;
         this.userService = userService;
+        this.deleteAllDataHandler = new DeleteAllData(authService);
     }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+        Spark.get("/db", (req, res) -> "Database route active!");
 
         // Register your endpoints and handle exceptions here.
-        Spark.delete("/clear", this::deleteAllData);
+        Spark.delete("/clear", deleteAllDataHandler::handle);
 
         // This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
+        System.out.println(Spark.routes());
 
         Spark.awaitInitialization();
         return Spark.port();

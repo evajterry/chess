@@ -1,17 +1,15 @@
 package service;
-
-import model.AuthData;
-import model.UserData;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import dataaccess.AuthAccess;
+import handlers.exception.*;
 
 public class AuthService {
-    private final Map<String, AuthData> authTokens = new HashMap<>();
-    public String generateAuthToken() {
-        String token = UUID.randomUUID().toString();
-        UserData username; // this is not how this works
-//        authTokens.put(token, new AuthData(token, username));
-        return token;
+    private final AuthAccess authAccess;
+
+    public AuthService(AuthAccess authAccess) {
+        this.authAccess = authAccess;
+    }
+
+    public void deleteAllData() throws ResponseException {
+        authAccess.deleteAllData();
     }
 }
