@@ -10,6 +10,6 @@ public class UserService {
     }
 
     public void deleteAllData() throws ResponseException {
-        userAccess.deleteAllData();
+        userAccess.deleteAllData(); // Cannot invoke "service.UserService.deleteAllData()" because "this.userService" is null
     }
 }

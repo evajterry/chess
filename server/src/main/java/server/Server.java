@@ -31,7 +31,7 @@ public class Server {
         Spark.get("/db", (req, res) -> "Database route active!");
 
         // Register your endpoints and handle exceptions here.
-        Spark.delete("/clear", deleteAllDataHandler::handle);
+        Spark.delete("/db", deleteAllDataHandler::handle);
 
         // This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
