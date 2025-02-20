@@ -1,6 +1,7 @@
 package service;
 import dataaccess.UserAccess;
 import handlers.exception.*;
+import model.UserData;
 
 public class UserService {
     private final UserAccess userAccess;
@@ -10,6 +11,10 @@ public class UserService {
     }
 
     public void deleteAllData() throws ResponseException {
-        userAccess.deleteAllData(); // Cannot invoke "service.UserService.deleteAllData()" because "this.userService" is null
+        userAccess.deleteAllData();
+    }
+
+    public Object registerUser(UserData user) throws ResponseException {
+        return userAccess.registerUser(user);
     }
 }

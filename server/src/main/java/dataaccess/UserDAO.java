@@ -4,6 +4,7 @@ import model.UserData;
 
 public interface UserDAO {
     void deleteAllData();
+    UserData registerUser(UserData user);
 
 }
 

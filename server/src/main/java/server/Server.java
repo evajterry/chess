@@ -5,6 +5,7 @@ import dataaccess.AuthAccess;
 import dataaccess.GameAccess;
 import dataaccess.UserAccess;
 import handlers.DeleteAllData;
+import handlers.RegisterUser;
 import model.AuthData;
 import org.eclipse.jetty.server.Authentication;
 import service.AuthService;
@@ -19,6 +20,7 @@ public class Server {
     private final GameService gameService;
     private final UserService userService;
     private final DeleteAllData deleteAllDataHandler;
+    private final RegisterUser registerUserHandler; // update
 
     public Server() {
 
@@ -26,6 +28,7 @@ public class Server {
         this.gameService = new GameService(new GameAccess());
         this.userService = new UserService(new UserAccess());
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
+        this.registerUserHandler = new RegisterUser(userService); // update
     }
 
     public int run(int desiredPort) {
@@ -36,7 +39,7 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", deleteAllDataHandler::handle);
-
+        Spark.post("/user", registerUserHandler::handle);
         // This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
         System.out.println(Spark.routes());
