@@ -12,12 +12,12 @@ import chess.*;
 import com.google.gson.Gson;
 
 public class Server {
-    private AuthService authService;
-    private GameService gameService;
-    private UserService userService;
+    private final AuthService authService;
+    private final GameService gameService;
+    private final UserService userService;
     private final DeleteAllData deleteAllDataHandler;
 
-    public Server() {
+    public Server(AuthService authService, GameService gameService, UserService userService) {
         this.authService = authService;
         this.gameService = gameService;
         this.userService = userService;
