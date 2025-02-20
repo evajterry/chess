@@ -1,6 +1,9 @@
 
 package server;
 
+import dataaccess.AuthAccess;
+import dataaccess.GameAccess;
+import dataaccess.UserAccess;
 import handlers.DeleteAllData;
 import model.AuthData;
 import org.eclipse.jetty.server.Authentication;
@@ -17,11 +20,12 @@ public class Server {
     private final UserService userService;
     private final DeleteAllData deleteAllDataHandler;
 
-    public Server(AuthService authService, GameService gameService, UserService userService) {
-        this.authService = authService;
-        this.gameService = gameService;
-        this.userService = userService;
-        this.deleteAllDataHandler = new DeleteAllData(authService);
+    public Server() {
+
+        this.authService = new AuthService(new AuthAccess());  // Assuming AuthAccess has a default constructor
+        this.gameService = new GameService(new GameAccess());
+        this.userService = new UserService(new UserAccess());
+        this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
     }
 
     public int run(int desiredPort) {

@@ -1,16 +1,17 @@
 package handlers;
 
+import org.eclipse.jetty.server.Authentication;
 import spark.Request;
 import spark.Response;
 import handlers.exception.*;
 import service.*;
 
 public class DeleteAllData {
-    private AuthService authService;
-    private UserService userService;
-    private GameService gameService;
+    private final AuthService authService;
+    private final UserService userService;
+    private final GameService gameService;
 
-    public DeleteAllData(AuthService authService) {
+    public DeleteAllData(AuthService authService, UserService userService, GameService gameService) {
         this.authService = authService;
         this.userService = userService;
         this.gameService = gameService;
