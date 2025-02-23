@@ -10,15 +10,22 @@ import model.UserData;
 
 public class RegisterUser {
     private final UserService userService;
+    private final Gson gson = new Gson();
 
     public RegisterUser(UserService userService) {
         this.userService = userService;
     }
 
     public Object handle(Request req, Response res) throws ResponseException {
-        var user = new Gson().fromJson(req.body(), UserData.class);
-        userService.registerUser(user);
-        res.status(204);
-        return new Gson().toJson(user);
+        try {
+            var user = new Gson().fromJson(req.body(), UserData.class);
+            String authToken = (String) userService.registerUser(user);
+            res.status(200);
+            return Serializer.registeredUser(user, authToken);
+
+        } catch (ResponseException e) {
+            res.status(e.StatusCode());
+            return gson.toJson(new ErrorResponse(e.getMessage()));
+        }
     }
 }

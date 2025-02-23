@@ -29,6 +29,7 @@ public class Server {
         this.userService = new UserService(new UserAccess());
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
         this.registerUserHandler = new RegisterUser(userService); // update
+        this.loginUserHandler = new LoginUser(userService);
     }
 
     public int run(int desiredPort) {
@@ -40,6 +41,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", deleteAllDataHandler::handle);
         Spark.post("/user", registerUserHandler::handle);
+        Spark.post("/session", loginUserHandler::handle);
         // This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
         System.out.println(Spark.routes());
