@@ -25,6 +25,17 @@ public class UserService {
         return userAccess.registerUser(user);
     }
 
+    public Object loginUser(UserData user) throws ResponseException {
+        if (userAccess.userExists(user)) {
+            if (!userAccess.isCorrectPassword(user)) {
+                throw new ResponseException(401, "Error: password incorrect");
+            }
+            return userAccess.loginUser(user);
+        } else {
+            throw new ResponseException(401, "Error: user does not exist");
+        }
+    }
+
     private Boolean isValidUser(UserData user) {
         return user.username() != null && user.password() != null && user.email() != null;
     }
