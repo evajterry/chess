@@ -15,6 +15,19 @@ public class UserService {
         userAccess.deleteAllData();
     }
 
+    public void logoutUser(String authToken) throws ResponseException {
+        if (!isValidAuthToken(authToken)) {
+            throw new ResponseException(401, "Error: not authorized");
+        } else {
+            userAccess.logoutUser(authToken);
+        }
+        userAccess.logoutUser(authToken);
+    }
+
+    private boolean isValidAuthToken(String authToken) {
+        return userAccess.userLoggedIn(authToken);
+    }
+
     public Object registerUser(UserData user) throws ResponseException {
         if (alreadyRegistered(user)) {
             throw new ResponseException(403, "Error: already taken"); // here's probably where I'd throw an error

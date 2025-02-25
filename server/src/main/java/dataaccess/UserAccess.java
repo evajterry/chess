@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.UserData;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class UserAccess implements UserDAO{
@@ -17,11 +18,25 @@ public class UserAccess implements UserDAO{
         users.clear();
     }
 
+    public boolean userLoggedIn(String authToken) {
+        return usersAuthTokens.containsValue(authToken);
+    }
+
+    public void logoutUser(String authToken) {
+        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
+            if (entry.getValue().equals(authToken)) {
+                String user = entry.getKey();
+                System.out.print(user);
+                usersAuthTokens.remove(user);
+            }
+        }
+    }
+
     public String registerUser(UserData u) {
         UserData newUser = new UserData(u.username(), u.email(), u.password());
         users.put(u.username(), newUser);
         String newAuthToken = AuthAccess.createAuthToken();
-        addAuthData(u.username(), newAuthToken);
+        addAuthData(u.username(), newAuthToken); // should I be adding authData here?
         return newAuthToken;
     }
 
@@ -29,7 +44,9 @@ public class UserAccess implements UserDAO{
 //        UserData user = new UserData(u.username(), u.email(), u.password());
         if (users.containsKey(u.username())) {
             if (isCorrectPassword(u)) {
-                return AuthAccess.createAuthToken();
+                String newAuthToken = AuthAccess.createAuthToken();
+                addAuthData(u.username(), newAuthToken);
+                return newAuthToken;
             } else {
                 return ("Error: incorrect password");
             }

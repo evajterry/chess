@@ -7,6 +7,8 @@ import dataaccess.UserAccess;
 import handlers.DeleteAllData;
 import handlers.RegisterUser;
 import handlers.LoginUser;
+import handlers.LogoutUser;
+import handlers.exception.ResponseException;
 import model.AuthData;
 import org.eclipse.jetty.server.Authentication;
 import service.AuthService;
@@ -47,12 +49,25 @@ public class Server {
         Spark.post("/user", registerUserHandler::handle);
         Spark.post("/session", loginUserHandler::handle);
         Spark.delete("/session", logoutUserHandler::handle);
+        Spark.exception(ResponseException.class, this::exceptionHandler);
+        Spark.exception(Exception.class, this::exceptionHandler);
         // This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
         System.out.println(Spark.routes());
 
         Spark.awaitInitialization();
         return Spark.port();
+    }
+
+    private void exceptionHandler(ResponseException ex, Request req, Response res) {
+        res.status(ex.StatusCode());
+        res.body(ex.toJson());
+    }
+
+    private void exceptionHandler(Exception ex, Request req, Response res) {
+        res.status(500);
+        res.body(ex.getMessage());
+        ex.printStackTrace();
     }
 
     public void stop() {
