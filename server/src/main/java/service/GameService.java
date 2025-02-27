@@ -5,6 +5,8 @@ import handlers.exception.*;
 import model.UserData;
 import spark.Response;
 
+import java.util.Objects;
+
 public class GameService {
     private final GameAccess gameAccess;
     private final UserAccess userAccess;
@@ -28,6 +30,31 @@ public class GameService {
             throw new ResponseException(400, "Error: bad request");
         }
         return gameAccess.createNewGame(authToken, gameName);
+    }
+
+    public void joinNewGame(String authToken, String username, int gameID, String reqTeam) throws ResponseException {
+        if (!isValidAuthToken(authToken)) {
+            System.out.print(authToken);
+            throw new ResponseException(401, "Error: authToken issue");
+        }
+        if (!isValidGameIDRequest(gameID)) {
+            throw new ResponseException(400, "Error: bad request");
+        }
+        if (reqTeam == null) {
+            throw new ResponseException(400, "Error: need requested team color");
+        } if (!acceptedTeamColor(reqTeam)) {
+            throw new ResponseException(400, "Error: bad team color request");
+        }else {
+            gameAccess.joinNewGame(authToken, username, gameID, reqTeam);
+        }
+    }
+
+    private boolean acceptedTeamColor(String reqTeam) {
+        return Objects.equals(reqTeam, "WHITE") || Objects.equals(reqTeam, "BLACK");
+    }
+
+    private boolean isValidGameIDRequest(int gameID) {
+        return (gameID > 0); // this might need to be changed
     }
 
     private boolean isValidGameRequest(String gameName) {

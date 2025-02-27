@@ -7,6 +7,7 @@ import dataaccess.UserAccess;
 import handlers.*;
 import handlers.exception.ResponseException;
 import model.AuthData;
+import model.UserData;
 import org.eclipse.jetty.server.Authentication;
 import service.AuthService;
 import service.GameService;

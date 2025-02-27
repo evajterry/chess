@@ -6,7 +6,6 @@ import spark.Request;
 import spark.Response;
 import handlers.exception.*;
 import service.*;
-import model.UserData;
 
 public class CreateNewGame {
     private final GameService gameService;
