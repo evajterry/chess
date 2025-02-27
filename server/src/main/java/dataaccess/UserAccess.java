@@ -22,14 +22,15 @@ public class UserAccess implements UserDAO{
         return usersAuthTokens.containsValue(authToken);
     }
 
-    public void logoutUser(String authToken) {
+    public void logoutUser(String authToken) { // this might be causing an issue
+        // initialize variable here
+        String user = "";
         for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
             if (entry.getValue().equals(authToken)) {
-                String user = entry.getKey();
-                System.out.print(user);
-                usersAuthTokens.remove(user);
+                user = entry.getKey();
             }
         }
+        usersAuthTokens.remove(user);
     }
 
     public String registerUser(UserData u) {

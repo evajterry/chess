@@ -13,4 +13,10 @@ public class Serializer {
         Gson gson = new Gson();
         return gson.toJson(jsonObject);
     }
+    public static Object newGameCreated(String gameID) {
+        Map<String, String> jsonObject = new HashMap<>();
+        jsonObject.put("gameID", gameID);
+        Gson gson = new Gson();
+        return gson.toJson(jsonObject);
+    }
 }

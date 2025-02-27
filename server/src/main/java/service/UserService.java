@@ -21,7 +21,7 @@ public class UserService {
         } else {
             userAccess.logoutUser(authToken);
         }
-        userAccess.logoutUser(authToken);
+//        return userAccess.logoutUser(authToken);
     }
 
     private boolean isValidAuthToken(String authToken) {

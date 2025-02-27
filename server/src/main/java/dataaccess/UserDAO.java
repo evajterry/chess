@@ -6,6 +6,7 @@ public interface UserDAO {
     void deleteAllData();
     String registerUser(UserData user);
     String loginUser(UserData user);
+    void logoutUser(String authToken);
 }
 
 //    String getUser(UserData u);

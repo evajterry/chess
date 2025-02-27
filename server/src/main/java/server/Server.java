@@ -4,10 +4,7 @@ package server;
 import dataaccess.AuthAccess;
 import dataaccess.GameAccess;
 import dataaccess.UserAccess;
-import handlers.DeleteAllData;
-import handlers.RegisterUser;
-import handlers.LoginUser;
-import handlers.LogoutUser;
+import handlers.*;
 import handlers.exception.ResponseException;
 import model.AuthData;
 import org.eclipse.jetty.server.Authentication;
@@ -26,16 +23,23 @@ public class Server {
     private final RegisterUser registerUserHandler; // update
     private final LoginUser loginUserHandler;
     private final LogoutUser logoutUserHandler;
+    private final CreateNewGame createNewGameHandler;
+    private final JoinGame joinGameHandler;
 
     public Server() {
+        UserAccess userAccess = new UserAccess();  // Create UserAccess instance
+        GameAccess gameAccess = new GameAccess(userAccess);
 
-        this.authService = new AuthService(new AuthAccess());  // Assuming AuthAccess has a default constructor
-        this.gameService = new GameService(new GameAccess());
-        this.userService = new UserService(new UserAccess());
+        this.authService = new AuthService(new AuthAccess());
+        this.gameService = new GameService(gameAccess, userAccess);  // Pass gameAccess to GameService
+        this.userService = new UserService(userAccess);
+
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
         this.registerUserHandler = new RegisterUser(userService); // update
         this.loginUserHandler = new LoginUser(userService);
         this.logoutUserHandler = new LogoutUser(userService);
+        this.createNewGameHandler = new CreateNewGame(gameService);
+        this.joinGameHandler = new JoinGame(gameService);
     }
 
     public int run(int desiredPort) {
@@ -49,6 +53,9 @@ public class Server {
         Spark.post("/user", registerUserHandler::handle);
         Spark.post("/session", loginUserHandler::handle);
         Spark.delete("/session", logoutUserHandler::handle);
+        Spark.post("/game", createNewGameHandler::handle);
+        Spark.put("game", joinGameHandler::handle);
+
         Spark.exception(ResponseException.class, this::exceptionHandler);
         Spark.exception(Exception.class, this::exceptionHandler);
         // This line initializes the server and can be removed once you have a functioning endpoint
