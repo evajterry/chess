@@ -2,9 +2,13 @@ package service;
 import dataaccess.GameAccess;
 import dataaccess.UserAccess;
 import handlers.exception.*;
+import model.GameData;
 import model.UserData;
 import spark.Response;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class GameService {
@@ -32,9 +36,15 @@ public class GameService {
         return gameAccess.createNewGame(authToken, gameName);
     }
 
+    public List<Map<String, Object>> listGames(String authToken) throws ResponseException {
+        if (!isValidAuthToken(authToken)) {
+            throw new ResponseException(401, "Error: authToken issue");
+        }
+        return gameAccess.listGames(authToken);
+    }
+
     public void joinNewGame(String authToken, String username, int gameID, String reqTeam) throws ResponseException {
         if (!isValidAuthToken(authToken)) {
-            System.out.print(authToken);
             throw new ResponseException(401, "Error: authToken issue");
         }
         if (!isValidGameIDRequest(gameID)) {

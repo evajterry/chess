@@ -1,27 +1,32 @@
 package handlers;
 
 import com.google.gson.Gson;
+import model.GameData;
 import spark.Request;
 import spark.Response;
 import handlers.exception.*;
 import service.*;
-import model.UserData;
 
-public class LogoutUser {
-    private final UserService userService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ListGames {
+    private final GameService gameService;
     private final Gson gson = new Gson();
 
-    public LogoutUser(UserService userService) {
-        this.userService = userService;
+    public ListGames(GameService gameService) {
+        this.gameService = gameService;
     }
 
     public Object handle(Request req, Response res) throws ResponseException {
         try {
             String authToken = req.headers("Authorization");
-            userService.logoutUser(authToken);
+            //System.out.print(gameName); // gameName working
+            List<Map<String, Object>> games = gameService.listGames(authToken);
             res.status(200);
 
-            return "{}";//Serializer.registeredUser(user, authToken); // update
+            return Serializer.listOfGames(games);
 
         } catch (ResponseException e) {
             res.status(e.StatusCode());

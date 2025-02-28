@@ -26,6 +26,7 @@ public class Server {
     private final LogoutUser logoutUserHandler;
     private final CreateNewGame createNewGameHandler;
     private final JoinGame joinGameHandler;
+    private final ListGames listGamesHandler;
 
     public Server() {
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
@@ -41,6 +42,7 @@ public class Server {
         this.logoutUserHandler = new LogoutUser(userService);
         this.createNewGameHandler = new CreateNewGame(gameService);
         this.joinGameHandler = new JoinGame(gameService);
+        this.listGamesHandler = new ListGames(gameService);
     }
 
     public int run(int desiredPort) {
@@ -55,7 +57,8 @@ public class Server {
         Spark.post("/session", loginUserHandler::handle);
         Spark.delete("/session", logoutUserHandler::handle);
         Spark.post("/game", createNewGameHandler::handle);
-        Spark.put("game", joinGameHandler::handle);
+        Spark.put("/game", joinGameHandler::handle);
+        Spark.get("/game", listGamesHandler::handle);
 
         Spark.exception(ResponseException.class, this::exceptionHandler);
         Spark.exception(Exception.class, this::exceptionHandler);
