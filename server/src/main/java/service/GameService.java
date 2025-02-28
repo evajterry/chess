@@ -43,7 +43,7 @@ public class GameService {
         return gameAccess.listGames(authToken);
     }
 
-    public void joinNewGame(String authToken, String username, int gameID, String reqTeam) throws ResponseException {
+    public boolean joinNewGame(String authToken, int gameID, String reqTeam) throws ResponseException {
         if (!isValidAuthToken(authToken)) {
             throw new ResponseException(401, "Error: authToken issue");
         }
@@ -55,12 +55,16 @@ public class GameService {
         } if (!acceptedTeamColor(reqTeam)) {
             throw new ResponseException(400, "Error: bad team color request");
         }else {
-            gameAccess.joinNewGame(authToken, username, gameID, reqTeam);
+            System.out.print(authToken + "\n" + gameID + "\n" + reqTeam);
+            if (!gameAccess.joinNewGame(authToken, gameID, reqTeam)) {
+                throw new ResponseException(403, "Error: already taken");
+            }
+            return gameAccess.joinNewGame(authToken, gameID, reqTeam);
         }
     }
 
     private boolean acceptedTeamColor(String reqTeam) {
-        return Objects.equals(reqTeam, "WHITE") || Objects.equals(reqTeam, "BLACK");
+        return Objects.equals(reqTeam, "WHITE") || Objects.equals(reqTeam, "BLACK") || Objects.equals(reqTeam, "WHITE/BLACK");
     }
 
     private boolean isValidGameIDRequest(int gameID) {

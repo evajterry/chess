@@ -19,6 +19,7 @@ public class GameAccess {
 
     public void deleteAllData() {
         game.clear();
+        idList.clear();
     }
 
     public String createNewGame(String authToken, String gameName) {
@@ -55,37 +56,57 @@ public class GameAccess {
             // game object : {"gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""}
     }
 
-    public void joinNewGame(String authToken, String username, int gameID, String requestedTeam) {
+    public boolean joinNewGame(String authToken, int gameID, String requestedTeam) {
+        String username = getUsername(authToken);
         if (isValidLogIn(authToken) && checkGameIDExists(gameID)) {
             GameData targetGame = game.get(gameID);
-            // should I check if the game is full? and should this function be void?
-            //if (targetGame.blackUsername() == null )
-            if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
-                if (targetGame.whiteUsername() == null) {
-                    GameData updatedGame = new GameData(username, targetGame.blackUsername(), gameID, targetGame.gameName(), targetGame.game());
-                    game.replace(gameID, updatedGame);
-                } else if (targetGame.blackUsername() == null) {
-                    GameData updatedGame = new GameData(targetGame.whiteUsername(), username, gameID, targetGame.gameName(), targetGame.game());
-                    game.replace(gameID, updatedGame);
+
+            if (!isTeamReqTaken(targetGame, requestedTeam)) {
+                GameData updatedGame = targetGame;
+                if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
+                    if (targetGame.whiteUsername() == null) {
+                        updatedGame = updatedGame.updateWhiteUsername(username);
+//                        game.replace(gameID, targetGame.updateWhiteUsername(username));
+                    } else if (targetGame.blackUsername() == null) {
+                        updatedGame = updatedGame.updateBlackUsername(username);
+//                        game.replace(gameID, targetGame.updateBlackUsername(username));
+                    }
                 }
-            }
-            else if (targetGame.blackUsername() == null && Objects.equals(requestedTeam, "BLACK")) {
-                GameData updatedGame = new GameData(targetGame.whiteUsername(), username, gameID, targetGame.gameName(), targetGame.game());
-                game.replace(gameID, updatedGame);
-            }
-            else if (targetGame.whiteUsername() == null && Objects.equals(requestedTeam, "WHITE")) {
-                GameData updatedGame = new GameData(username, targetGame.blackUsername(), gameID, targetGame.gameName(), targetGame.game());
-                game.replace(gameID, updatedGame);
-            }
-            else if (targetGame.blackUsername() == null) {
-                GameData updatedGame = new GameData(targetGame.whiteUsername(), username, gameID, targetGame.gameName(), targetGame.game());
-                game.replace(gameID, updatedGame);
-            }
-            else if (targetGame.whiteUsername() == null) {
-                GameData updatedGame = new GameData(username, targetGame.blackUsername(), gameID, targetGame.gameName(), targetGame.game());
-                game.replace(gameID, updatedGame);
+                else if (targetGame.blackUsername() == null && Objects.equals(requestedTeam, "BLACK")) {
+                    updatedGame = updatedGame.updateBlackUsername(username);
+//                    game.replace(gameID, targetGame.updateBlackUsername(username));
+                }
+                else if (targetGame.whiteUsername() == null && Objects.equals(requestedTeam, "WHITE")) {
+                    updatedGame = updatedGame.updateWhiteUsername(username);
+//                    game.replace(gameID, targetGame.updateWhiteUsername(username));
+                }
+                else if (targetGame.blackUsername() == null) {
+                    updatedGame = updatedGame.updateBlackUsername(username);
+//                    game.replace(gameID, targetGame.updateBlackUsername(username));
+                }
+                else if (targetGame.whiteUsername() == null) {
+                    updatedGame = updatedGame.updateWhiteUsername(username);
+//                    game.replace(gameID, targetGame.updateWhiteUsername(username));
+                }
+                game.put(gameID, updatedGame);
+                return true;
             }
         }
+        return false;
+    }
+
+    public boolean isTeamReqTaken(GameData targetGame, String requestedTeam) {
+        if (Objects.equals(requestedTeam, "BLACK") && targetGame.blackUsername() != null) {
+            return true;
+        } else if (Objects.equals(requestedTeam, "WHITE") && targetGame.whiteUsername() != null) {
+            return true;
+        } else if (Objects.equals(requestedTeam, "WHITE/BLACK") && targetGame.whiteUsername() != null && targetGame.blackUsername() != null) {
+            return true;
+        } return false;
+    }
+
+    private String getUsername(String authToken) {
+        return userAccess.getUsernameFromAuthToken(authToken);
     }
 
     private boolean checkGameIDExists(int gameID) {

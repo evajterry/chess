@@ -21,7 +21,7 @@ public class DeleteAllData {
         userService.deleteAllData();
         authService.deleteAllData();
         gameService.deleteAllData();
-        res.status(204);
+        res.status(200);
         return "";
     }
 }

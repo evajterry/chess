@@ -38,6 +38,7 @@ public class UserAccess implements UserDAO{
         users.put(u.username(), newUser);
         String newAuthToken = AuthAccess.createAuthToken();
         addAuthData(u.username(), newAuthToken); // should I be adding authData here?
+
         return newAuthToken;
     }
 
@@ -67,5 +68,15 @@ public class UserAccess implements UserDAO{
 
     public Boolean userExists(UserData u) {
         return users.containsKey(u.username());
+    }
+
+    public String getUsernameFromAuthToken(String authToken) {
+        String user = "";
+        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
+            if (entry.getValue().equals(authToken)) {
+                user = entry.getKey();
+            }
+        }
+        return user;
     }
 }
