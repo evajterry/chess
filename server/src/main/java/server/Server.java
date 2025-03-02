@@ -6,15 +6,10 @@ import dataaccess.GameAccess;
 import dataaccess.UserAccess;
 import handlers.*;
 import handlers.exception.ResponseException;
-import model.AuthData;
-import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
 import spark.*;
-import chess.*;
-import com.google.gson.Gson;
 
 public class Server {
     private final AuthService authService;
@@ -71,7 +66,7 @@ public class Server {
     }
 
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
-        res.status(ex.StatusCode());
+        res.status(ex.statusCode());
         res.body(ex.toJson());
     }
 

@@ -3,8 +3,6 @@ package dataaccess;
 import chess.ChessGame;
 import handlers.exception.ResponseException;
 import model.GameData;
-import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 
 import java.util.*;
 
@@ -53,7 +51,6 @@ public class GameAccess {
             gamesList.add(gameMap);
         }
         return gamesList;
-            // game object : {"gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""}
     }
 
     public boolean joinNewGame(String authToken, int gameID, String requestedTeam) {
@@ -66,27 +63,21 @@ public class GameAccess {
                 if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
                     if (targetGame.whiteUsername() == null) {
                         updatedGame = updatedGame.updateWhiteUsername(username);
-//                        game.replace(gameID, targetGame.updateWhiteUsername(username));
                     } else if (targetGame.blackUsername() == null) {
                         updatedGame = updatedGame.updateBlackUsername(username);
-//                        game.replace(gameID, targetGame.updateBlackUsername(username));
                     }
                 }
                 else if (targetGame.blackUsername() == null && Objects.equals(requestedTeam, "BLACK")) {
                     updatedGame = updatedGame.updateBlackUsername(username);
-//                    game.replace(gameID, targetGame.updateBlackUsername(username));
                 }
                 else if (targetGame.whiteUsername() == null && Objects.equals(requestedTeam, "WHITE")) {
                     updatedGame = updatedGame.updateWhiteUsername(username);
-//                    game.replace(gameID, targetGame.updateWhiteUsername(username));
                 }
                 else if (targetGame.blackUsername() == null) {
                     updatedGame = updatedGame.updateBlackUsername(username);
-//                    game.replace(gameID, targetGame.updateBlackUsername(username));
                 }
                 else if (targetGame.whiteUsername() == null) {
                     updatedGame = updatedGame.updateWhiteUsername(username);
-//                    game.replace(gameID, targetGame.updateWhiteUsername(username));
                 }
                 game.put(gameID, updatedGame);
                 return true;

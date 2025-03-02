@@ -27,7 +27,7 @@ public class CreateNewGame {
             return Serializer.newGameCreated(gameID);
 
         } catch (ResponseException e) {
-            res.status(e.StatusCode());
+            res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
     }

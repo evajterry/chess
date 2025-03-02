@@ -5,7 +5,6 @@ import spark.Request;
 import spark.Response;
 import handlers.exception.*;
 import service.*;
-import model.UserData;
 
 public class LogoutUser {
     private final UserService userService;
@@ -24,7 +23,7 @@ public class LogoutUser {
             return "{}";//Serializer.registeredUser(user, authToken); // update
 
         } catch (ResponseException e) {
-            res.status(e.StatusCode());
+            res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
     }

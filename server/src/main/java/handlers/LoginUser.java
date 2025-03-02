@@ -1,7 +1,6 @@
 package handlers;
 
 import com.google.gson.Gson;
-import org.eclipse.jetty.server.Authentication;
 import spark.Request;
 import spark.Response;
 import handlers.exception.*;
@@ -24,7 +23,7 @@ public class LoginUser {
             return Serializer.registeredUser(user, authToken); // update
 
         } catch (ResponseException e) {
-            res.status(e.StatusCode());
+            res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
     }

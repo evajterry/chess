@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class AuthAccess { // implements UserDAO
-    private final HashMap<String, AuthData> auth = new HashMap<>();
+    private final HashMap<String, AuthData> auth = new HashMap<>(); // auth getting stored somewhere else?
 
     public void insertAuthToken(AuthData t) { //  throws DataAccessException
         AuthData newAuthToken = new AuthData(t.authToken(), t.username());

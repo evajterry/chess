@@ -362,7 +362,7 @@ public class StandardAPITests {
                 "Authtoken returned by login matched authtoken from prior login");
 
 
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
+        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth); // auth token needs to stay stored?
         assertHttpOk(createResult);
 
 

@@ -16,6 +16,7 @@ public class UserAccess implements UserDAO{
     @Override
     public void deleteAllData() {
         users.clear();
+        usersAuthTokens.clear();
     }
 
     public boolean userLoggedIn(String authToken) {
