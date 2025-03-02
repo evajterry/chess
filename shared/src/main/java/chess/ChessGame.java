@@ -156,17 +156,25 @@ public class ChessGame {
 
     public boolean isInCheckWithBoardCopy(TeamColor teamColor, ChessBoard boardCopy) {
         ChessPosition kingPosition = findKingPosition(boardCopy, teamColor);
+        boolean check = false;
         for (int row = 1; row <=8; row++) {
             for (int col = 1; col <=8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = boardCopy.getPiece(position);
-                if (piece != null && piece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> possibleMoves = piece.pieceMoves(boardCopy, position);
-                    for (ChessMove move : possibleMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true; // a piece's end position is where the king is
-                        }
-                    }
+                if (isMoveThatEndsWithCheck(row, col, kingPosition, boardCopy, teamColor)) {
+                    check = true;
+                }
+            }
+        }
+        return check;
+    }
+
+    private boolean isMoveThatEndsWithCheck(int row, int col, ChessPosition kingPosition, ChessBoard board, TeamColor color) {
+        ChessPosition position = new ChessPosition(row, col);
+        ChessPiece piece = board.getPiece(position);
+        if (piece != null && piece.getTeamColor() != color) {
+            Collection<ChessMove> possibleMoves = piece.pieceMoves(board, position);
+            for (ChessMove move : possibleMoves) {
+                if (move.getEndPosition().equals(kingPosition)) {
+                    return true;
                 }
             }
         }
@@ -181,21 +189,15 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(board, teamColor);
+        boolean check = false;
         for (int row = 1; row <=8; row++) {
             for (int col = 1; col <=8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> possibleMoves = piece.pieceMoves(board, position);
-                    for (ChessMove move : possibleMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true; // a piece's end position is where the king is
-                        }
-                    }
+                if (isMoveThatEndsWithCheck(row, col, kingPosition, board, teamColor)) {
+                    check = true;
                 }
             }
         }
-        return false;
+        return check;
     }
 
     private ChessPosition findKingPosition(ChessBoard board, TeamColor teamColor) {
