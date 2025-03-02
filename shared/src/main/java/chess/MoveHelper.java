@@ -3,7 +3,7 @@ package chess;
 import java.util.Collection;
 
 public class MoveHelper {
-    static boolean continueToAddNewPiece(int r, int c, ChessGame.TeamColor TC, ChessPosition po, Collection<ChessMove> vm, ChessBoard b) {
+    static boolean continueToAddNewPiece(int r, int c, ChessGame.TeamColor tC, ChessPosition po, Collection<ChessMove> vm, ChessBoard b) {
         if (r >= 0 && r < 8 && c >= 0 && c < 8) {
             ChessPosition newPosition = new ChessPosition(r + 1, c + 1);
             ChessPiece targetPiece = b.getPiece(newPosition);
@@ -11,7 +11,7 @@ public class MoveHelper {
                 vm.add(new ChessMove(po, newPosition, null));
                 return true;
             }
-            if (targetPiece.getTeamColor() != TC) {
+            if (targetPiece.getTeamColor() != tC) {
                 vm.add(new ChessMove(po, newPosition, null));
                 return false;
             }

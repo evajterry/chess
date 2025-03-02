@@ -11,7 +11,7 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         int originalCol = myPosition.getColumn();
 
         if (teamColor == ChessGame.TeamColor.WHITE) {
-            whiteForwardMovement(validMoves, piece, originalRow, originalCol, myPosition, board);
+            whiteForwardMovement(validMoves, originalRow, originalCol, myPosition, board);
             whtDiagMove(validMoves, piece, originalRow, originalCol, myPosition, board);
         }
         if (teamColor == ChessGame.TeamColor.BLACK) {
@@ -118,27 +118,27 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
         }
     }
 
-    private void whiteForwardMovement(Collection<ChessMove> validMoves, ChessPiece piece, int originalRow, int originalCol, ChessPosition myPosition, ChessBoard board) {
+    private void whiteForwardMovement(Collection<ChessMove> vM, int r, int c, ChessPosition pos, ChessBoard board) {
         // determine if it's the first move, add two
-        ChessPosition targetPosition = new ChessPosition(originalRow + 1, originalCol);
-        if (originalRow == 2) {
-            ChessPosition targetPositionPlus2 = new ChessPosition(originalRow + 2, originalCol);
+        ChessPosition targetPosition = new ChessPosition(r + 1, c);
+        if (r == 2) {
+            ChessPosition targetPositionPlus2 = new ChessPosition(r + 2, c);
             ChessPiece targetPiece = board.getPiece(targetPosition);
             ChessPiece targetPiecePlus2 = board.getPiece(targetPositionPlus2);
 
             if (targetPiece == null) {
-                validMoves.add(new ChessMove(myPosition, targetPosition, null));
+                vM.add(new ChessMove(pos, targetPosition, null));
                 if (targetPiecePlus2 == null) {
-                    validMoves.add(new ChessMove(myPosition, targetPositionPlus2, null));
+                    vM.add(new ChessMove(pos, targetPositionPlus2, null));
                 }
             }// regular forward movement
-        } else if (isValidPosition(originalRow + 1, originalCol)) {
+        } else if (isValidPosition(r + 1, c)) {
             ChessPiece targetPiece = board.getPiece(targetPosition);
             if (targetPiece == null) {
-                if (originalRow + 1 == 8) {
-                    addPromotionPiece(validMoves, myPosition, targetPosition);
+                if (r + 1 == 8) {
+                    addPromotionPiece(vM, pos, targetPosition);
                 } else {
-                    validMoves.add(new ChessMove(myPosition, targetPosition, null));
+                    vM.add(new ChessMove(pos, targetPosition, null));
                 }
             }
         }
