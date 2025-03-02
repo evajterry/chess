@@ -3,8 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static chess.MoveHelper.isPositionValid;
-import static chess.MoveHelper.knight_rook_move;
+import static chess.MoveHelper.knightRookMove;
 
 public class KnightMoveCalculator implements ChessPieceMovesCalculator {
     @Override
@@ -14,7 +13,7 @@ public class KnightMoveCalculator implements ChessPieceMovesCalculator {
         int[] rowOffsets = {1, 2, 2, 1, -1, -2, -2, -1};
         int[] colOffsets = {-2, -1, 1, 2, 2, 1, -1, -2};
 
-        knight_rook_move(position, validMoves, board, rowOffsets, colOffsets);
+        knightRookMove(position, validMoves, board, rowOffsets, colOffsets);
 
         return validMoves;
     }

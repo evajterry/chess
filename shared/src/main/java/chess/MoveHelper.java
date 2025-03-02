@@ -22,7 +22,7 @@ public class MoveHelper {
         return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
 
-    static void knight_rook_move(ChessPosition position, Collection<ChessMove> validMoves, ChessBoard board, int[] rowOffsets, int[] colOffsets) {
+    static void knightRookMove(ChessPosition position, Collection<ChessMove> validMoves, ChessBoard board, int[] rowOffsets, int[] colOffsets) {
         ChessPiece piece = board.getPiece(position);
         ChessGame.TeamColor teamColor = piece.getTeamColor();
 
