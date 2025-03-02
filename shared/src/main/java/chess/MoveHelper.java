@@ -3,16 +3,16 @@ package chess;
 import java.util.Collection;
 
 public class MoveHelper {
-    static boolean continueToAddNewPiece(int newRow, int col, ChessGame.TeamColor teamColor, ChessPosition position, Collection<ChessMove> validMoves, ChessBoard board) {
-        if (newRow >= 0 && newRow < 8 && col >= 0 && col < 8) {
-            ChessPosition newPosition = new ChessPosition(newRow + 1, col + 1);
-            ChessPiece targetPiece = board.getPiece(newPosition);
+    static boolean continueToAddNewPiece(int r, int c, ChessGame.TeamColor TC, ChessPosition po, Collection<ChessMove> vm, ChessBoard b) {
+        if (r >= 0 && r < 8 && c >= 0 && c < 8) {
+            ChessPosition newPosition = new ChessPosition(r + 1, c + 1);
+            ChessPiece targetPiece = b.getPiece(newPosition);
             if (targetPiece == null) {
-                validMoves.add(new ChessMove(position, newPosition, null));
+                vm.add(new ChessMove(po, newPosition, null));
                 return true;
             }
-            if (targetPiece.getTeamColor() != teamColor) {
-                validMoves.add(new ChessMove(position, newPosition, null));
+            if (targetPiece.getTeamColor() != TC) {
+                vm.add(new ChessMove(po, newPosition, null));
                 return false;
             }
         }

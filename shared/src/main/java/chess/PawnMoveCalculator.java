@@ -12,106 +12,106 @@ public class PawnMoveCalculator implements ChessPieceMovesCalculator {
 
         if (teamColor == ChessGame.TeamColor.WHITE) {
             whiteForwardMovement(validMoves, piece, originalRow, originalCol, myPosition, board);
-            whiteDiagonalMovement(validMoves, piece, originalRow, originalCol, myPosition, board);
+            whtDiagMove(validMoves, piece, originalRow, originalCol, myPosition, board);
         }
         if (teamColor == ChessGame.TeamColor.BLACK) {
-            blackForwardMovement(validMoves, piece, originalRow, originalCol, myPosition, board);
-            blackDiagonalMovement(validMoves, piece, originalRow, originalCol, myPosition, board);
+            blFrwdMove(validMoves, originalRow, originalCol, myPosition, board);
+            blDiagMove(validMoves, piece, originalRow, originalCol, myPosition, board);
         }
 
         return validMoves;
     }
 
-    private void blackDiagonalMovement(Collection<ChessMove> validMoves, ChessPiece piece, int originalRow, int originalCol, ChessPosition myPosition, ChessBoard board) {
+    private void blDiagMove(Collection<ChessMove> vm, ChessPiece p, int r, int c, ChessPosition pos, ChessBoard board) {
         // right diagonal
-        ChessPosition targetRight = new ChessPosition(originalRow - 1, originalCol + 1);
-        if (isValidPosition(originalRow - 1, originalCol + 1)) {
+        ChessPosition targetRight = new ChessPosition(r - 1, c + 1);
+        if (isValidPosition(r - 1, c + 1)) {
             ChessPiece targetRightPiece = board.getPiece(targetRight);
             if (targetRightPiece != null) {
                 ChessGame.TeamColor targetRightTeamColor = targetRightPiece.getTeamColor();
-                ChessGame.TeamColor pieceColor = piece.getTeamColor();
+                ChessGame.TeamColor pieceColor = p.getTeamColor();
                 if (pieceColor != targetRightTeamColor) {
-                    if (originalRow - 1 == 1) {
-                        addPromotionPiece(validMoves, myPosition, targetRight);
+                    if (r - 1 == 1) {
+                        addPromotionPiece(vm, pos, targetRight);
                     } else {
-                        validMoves.add(new ChessMove(myPosition, targetRight, null));
+                        vm.add(new ChessMove(pos, targetRight, null));
                     }
                 }
             }
         }
         //left diagonal
-        ChessPosition targetLeft = new ChessPosition(originalRow - 1, originalCol - 1);
-        if (isValidPosition(originalRow - 1, originalCol - 1)) {
+        ChessPosition targetLeft = new ChessPosition(r - 1, c - 1);
+        if (isValidPosition(r - 1, c - 1)) {
             ChessPiece targetLeftPiece = board.getPiece(targetLeft);
             if (targetLeftPiece != null) {
                 ChessGame.TeamColor targetLeftTeamColor = targetLeftPiece.getTeamColor();
-                ChessGame.TeamColor pieceColor = piece.getTeamColor();
+                ChessGame.TeamColor pieceColor = p.getTeamColor();
                 if (pieceColor != targetLeftTeamColor) {
-                    if (originalRow - 1 == 1) {
-                        addPromotionPiece(validMoves, myPosition, targetLeft);
+                    if (r - 1 == 1) {
+                        addPromotionPiece(vm, pos, targetLeft);
                     } else {
-                        validMoves.add(new ChessMove(myPosition, targetLeft, null));
+                        vm.add(new ChessMove(pos, targetLeft, null));
                     }
                 }
             }
         }
     }
 
-    private void blackForwardMovement(Collection<ChessMove> validMoves, ChessPiece piece, int originalRow, int originalCol, ChessPosition myPosition, ChessBoard board) {
+    private void blFrwdMove(Collection<ChessMove> vm, int r, int c, ChessPosition pos, ChessBoard board) {
         // determine if it's the first move, add two
-        ChessPosition targetPosition = new ChessPosition(originalRow - 1, originalCol);
-        if (originalRow == 7) {
-            ChessPosition targetPositionPlus2 = new ChessPosition(originalRow - 2, originalCol);
+        ChessPosition targetPosition = new ChessPosition(r - 1, c);
+        if (r == 7) {
+            ChessPosition targetPositionPlus2 = new ChessPosition(r - 2, c);
             ChessPiece targetPiece = board.getPiece(targetPosition);
             ChessPiece targetPiecePlus2 = board.getPiece(targetPositionPlus2);
 
             if (targetPiece == null) {
-                validMoves.add(new ChessMove(myPosition, targetPosition, null));
+                vm.add(new ChessMove(pos, targetPosition, null));
                 if (targetPiecePlus2 == null) {
-                    validMoves.add(new ChessMove(myPosition, targetPositionPlus2, null));
+                    vm.add(new ChessMove(pos, targetPositionPlus2, null));
                 }
             }// regular forward movement
-        } else if (isValidPosition(originalRow - 1, originalCol)) {
+        } else if (isValidPosition(r - 1, c)) {
             ChessPiece targetPiece = board.getPiece(targetPosition);
             if (targetPiece == null) {
-                if (originalRow - 1 == 1) {
-                    addPromotionPiece(validMoves, myPosition, targetPosition);
+                if (r - 1 == 1) {
+                    addPromotionPiece(vm, pos, targetPosition);
                 } else {
-                    validMoves.add(new ChessMove(myPosition, targetPosition, null));
+                    vm.add(new ChessMove(pos, targetPosition, null));
                 }
             }
         }
     }
 
-    private void whiteDiagonalMovement(Collection<ChessMove> validMoves, ChessPiece piece, int originalRow, int originalCol, ChessPosition myPosition, ChessBoard board) {
+    private void whtDiagMove(Collection<ChessMove> vm, ChessPiece p, int r, int c, ChessPosition pos, ChessBoard board) {
         // right diagonal
-        ChessPosition targetRight = new ChessPosition(originalRow + 1, originalCol + 1);
-        if (isValidPosition(originalRow + 1, originalCol + 1)) {
+        ChessPosition targetRight = new ChessPosition(r + 1, c + 1);
+        if (isValidPosition(r + 1, c + 1)) {
             ChessPiece targetRightPiece = board.getPiece(targetRight);
             if (targetRightPiece != null) {
                 ChessGame.TeamColor targetRightTeamColor = targetRightPiece.getTeamColor();
-                ChessGame.TeamColor pieceColor = piece.getTeamColor();
+                ChessGame.TeamColor pieceColor = p.getTeamColor();
                 if (pieceColor != targetRightTeamColor) {
-                    if (originalRow + 1 == 8) {
-                        addPromotionPiece(validMoves, myPosition, targetRight);
+                    if (r + 1 == 8) {
+                        addPromotionPiece(vm, pos, targetRight);
                     } else {
-                        validMoves.add(new ChessMove(myPosition, targetRight, null));
+                        vm.add(new ChessMove(pos, targetRight, null));
                     }
                 }
             }
         }
         //left diagonal
-        ChessPosition targetLeft = new ChessPosition(originalRow + 1, originalCol - 1);
-        if (isValidPosition(originalRow + 1, originalCol - 1)) {
+        ChessPosition targetLeft = new ChessPosition(r + 1, c - 1);
+        if (isValidPosition(r + 1, c - 1)) {
             ChessPiece targetLeftPiece = board.getPiece(targetLeft);
             if (targetLeftPiece != null) {
                 ChessGame.TeamColor targetLeftTeamColor = targetLeftPiece.getTeamColor();
-                ChessGame.TeamColor pieceColor = piece.getTeamColor();
+                ChessGame.TeamColor pieceColor = p.getTeamColor();
                 if (pieceColor != targetLeftTeamColor) {
-                    if (originalRow + 1 == 8) {
-                        addPromotionPiece(validMoves, myPosition, targetLeft);
+                    if (r + 1 == 8) {
+                        addPromotionPiece(vm, pos, targetLeft);
                     } else {
-                        validMoves.add(new ChessMove(myPosition, targetLeft, null));
+                        vm.add(new ChessMove(pos, targetLeft, null));
                     }
                 }
             }
