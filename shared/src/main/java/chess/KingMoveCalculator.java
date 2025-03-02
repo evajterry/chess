@@ -3,7 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static chess.MoveHelper.isPositionValid;
+import static chess.MoveHelper.knight_rook_move;
 
 public class KingMoveCalculator implements ChessPieceMovesCalculator {
     @Override
@@ -13,23 +13,7 @@ public class KingMoveCalculator implements ChessPieceMovesCalculator {
         int[] rowOffsets = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] colOffsets = {-1, 0, 1, -1, 1, -1, 0, 1};
 
-        ChessPiece piece = board.getPiece(position);
-        ChessGame.TeamColor teamColor = piece.getTeamColor();
-
-        for (int i = 0; i < rowOffsets.length; i++) {
-
-            int newRow = position.getRow() + rowOffsets[i];
-            int newCol = position.getColumn() + colOffsets[i];
-
-            if (isPositionValid(newRow, newCol)) {
-                ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                ChessPiece targetPiece = board.getPiece(newPosition);
-
-                if (targetPiece == null || targetPiece.getTeamColor() != teamColor) { // the board for test 1
-                    validMoves.add(new ChessMove(position, newPosition, null));
-                }
-            }
-        }
+        knight_rook_move(position, validMoves, board, rowOffsets, colOffsets);
 
         return validMoves;
     }

@@ -21,4 +21,24 @@ public class MoveHelper {
     static boolean isPositionValid(int row, int col) {
         return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
+
+    static void knight_rook_move(ChessPosition position, Collection<ChessMove> validMoves, ChessBoard board, int[] rowOffsets, int[] colOffsets) {
+        ChessPiece piece = board.getPiece(position);
+        ChessGame.TeamColor teamColor = piece.getTeamColor();
+
+        for (int i = 0; i < rowOffsets.length; i++) {
+
+            int newRow = position.getRow() + rowOffsets[i];
+            int newCol = position.getColumn() + colOffsets[i];
+
+            if (isPositionValid(newRow, newCol)) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                ChessPiece targetPiece = board.getPiece(newPosition);
+
+                if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
+                    validMoves.add(new ChessMove(position, newPosition, null));
+                }
+            }
+        }
+    }
 }
