@@ -228,7 +228,9 @@ public class ChessGame {
                 ChessPiece piece = board.getPiece(position);
                 if (piece != null && piece.getTeamColor() == teamColor) {
                     Collection<ChessMove> validMoves = validMoves(position);
-                    if (!validMoves.isEmpty()) return false;
+                    if (!validMoves.isEmpty()) {
+                        return false;
+                    };
                 }
             }
         }
