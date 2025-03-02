@@ -3,6 +3,8 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static chess.MoveHelper.isPositionValid;
+
 public class KingMoveCalculator implements ChessPieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
@@ -30,9 +32,5 @@ public class KingMoveCalculator implements ChessPieceMovesCalculator {
         }
 
         return validMoves;
-    }
-
-    private boolean isPositionValid(int row, int col) {
-        return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
 }

@@ -3,6 +3,8 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static chess.MoveHelper.isPositionValid;
+
 public class KnightMoveCalculator implements ChessPieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
@@ -19,7 +21,7 @@ public class KnightMoveCalculator implements ChessPieceMovesCalculator {
             int newRow = position.getRow() + rowOffsets[i];
             int newCol = position.getColumn() + colOffsets[i];
 
-            if (isPositionValid(newRow - 1, newCol - 1)) {
+            if (isPositionValid(newRow, newCol)) {
                 ChessPosition newPosition = new ChessPosition(newRow, newCol);
                 ChessPiece targetPiece = board.getPiece(newPosition);
 
@@ -30,9 +32,5 @@ public class KnightMoveCalculator implements ChessPieceMovesCalculator {
         }
 
         return validMoves;
-    }
-
-    private boolean isPositionValid(int row, int col) {
-        return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
 }
