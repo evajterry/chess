@@ -6,18 +6,17 @@ import java.util.Collection;
 public class RookMoveCalculator implements ChessPieceMovesCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        Collection<ChessMove> validMoves = new ArrayList<>(); // does declaring a type in line 8 instantiate anything?
+        Collection<ChessMove> validMoves = new ArrayList<>();
 
         ChessPiece piece = board.getPiece(position);
         ChessGame.TeamColor teamColor = piece.getTeamColor();
         int originalRow = position.getRow() - 1;
         int originalCol = position.getColumn() - 1;
-        // calculate the vertical upward movements
 
         for (int i = 1; i < 8; i++) {
-            int newRow = originalRow + i;
+            int newVertUpRow = originalRow + i;
 //            int col = position.getColumn();
-            if (!continueToAddNewPiece(newRow, originalCol, teamColor, position, validMoves, board)) {
+            if (!continueToAddNewPiece(newVertUpRow, originalCol, teamColor, position, validMoves, board)) {
                 break;
             };
         }
