@@ -9,16 +9,19 @@ import model.UserData;
 
 public class LoginUser {
     private final UserService userService;
+    private final AuthService authService;
     private final Gson gson = new Gson();
 
-    public LoginUser(UserService userService) {
+    public LoginUser(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
     public Object handle(Request req, Response res) throws ResponseException {
         try {
             var user = new Gson().fromJson(req.body(), UserData.class);
             String authToken = (String) userService.loginUser(user);
+            authService.addAuthToken(authToken);
             res.status(200);
             return Serializer.registeredUser(user, authToken); // update
 

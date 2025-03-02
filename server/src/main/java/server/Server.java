@@ -32,8 +32,8 @@ public class Server {
         this.userService = new UserService(userAccess);
 
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
-        this.registerUserHandler = new RegisterUser(userService); // update
-        this.loginUserHandler = new LoginUser(userService);
+        this.registerUserHandler = new RegisterUser(userService, authService); // update
+        this.loginUserHandler = new LoginUser(userService, authService);
         this.logoutUserHandler = new LogoutUser(userService);
         this.createNewGameHandler = new CreateNewGame(gameService);
         this.joinGameHandler = new JoinGame(gameService);

@@ -2,17 +2,25 @@ package dataaccess;
 
 import model.AuthData;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class AuthAccess { // implements UserDAO
-    private final HashMap<String, AuthData> auth = new HashMap<>(); // auth getting stored somewhere else?
+    private final HashMap<String, String> auth = new HashMap<>(); // auth getting stored somewhere else?
 
-    public void insertAuthToken(AuthData t) { //  throws DataAccessException
-        AuthData newAuthToken = new AuthData(t.authToken(), t.username());
-        auth.put(t.username(), newAuthToken);
+    public void insertAuthToken(String authToken) { //  throws DataAccessException
+        String username = getUserName(authToken);
+        auth.put(username, authToken);
     }
-    public String getAuthToken(AuthData t) {
-        return t.authToken();
+
+    private String getUserName(String authToken) {
+        String username = "";
+        for (Map.Entry<String, String> entry : auth.entrySet()) {
+            if (entry.getValue().equals(authToken)) {
+                username = entry.getKey();
+            }
+        }
+        return username;
     }
 
     public static String createAuthToken() {
