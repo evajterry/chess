@@ -35,7 +35,7 @@ public class Server {
         this.registerUserHandler = new RegisterUser(userService, authService); // update
         this.loginUserHandler = new LoginUser(userService, authService);
         this.logoutUserHandler = new LogoutUser(userService);
-        this.createNewGameHandler = new CreateNewGame(gameService);
+        this.createNewGameHandler = new CreateNewGame(gameService, authService);
         this.joinGameHandler = new JoinGame(gameService);
         this.listGamesHandler = new ListGames(gameService);
     }

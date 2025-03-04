@@ -10,7 +10,7 @@ public class AuthAccess { // implements UserDAO
 
     public void insertAuthToken(String authToken) { //  throws DataAccessException
         String username = getUserName(authToken);
-        auth.put(username, authToken);
+        auth.put(authToken, username);
     }
 
     private String getUserName(String authToken) {

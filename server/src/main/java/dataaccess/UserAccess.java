@@ -8,6 +8,7 @@ import java.util.Objects;
 public class UserAccess implements UserDAO{
     private final HashMap<String, UserData> users = new HashMap<>();
     private final HashMap<String, String> usersAuthTokens = new HashMap<>(); // this might be the wrong way to do this
+    // store authtoken username
 
     public String getUser(UserData u) {
         return u.username();
@@ -20,18 +21,19 @@ public class UserAccess implements UserDAO{
     }
 
     public boolean userLoggedIn(String authToken) {
-        return usersAuthTokens.containsValue(authToken);
+        return usersAuthTokens.containsKey(authToken);
     }
 
     public void logoutUser(String authToken) { // this might be causing an issue
         // initialize variable here
-        String user = "";
-        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
-            if (entry.getValue().equals(authToken)) {
-                user = entry.getKey();
-            }
-        }
-        usersAuthTokens.remove(user);
+        usersAuthTokens.remove(authToken);
+//        String user = "";
+//        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
+//            if (entry.getValue().equals(authToken)) {
+//                user = entry.getKey();
+//            }
+//        }
+//        usersAuthTokens.remove(user);
     }
 
     public String registerUser(UserData u) {
@@ -64,7 +66,7 @@ public class UserAccess implements UserDAO{
     }
 
     private void addAuthData(String username, String newAuthToken) {
-        usersAuthTokens.put(username, newAuthToken);
+        usersAuthTokens.put(newAuthToken, username);
     }
 
     public Boolean userExists(UserData u) {
@@ -72,12 +74,6 @@ public class UserAccess implements UserDAO{
     }
 
     public String getUsernameFromAuthToken(String authToken) {
-        String user = "";
-        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
-            if (entry.getValue().equals(authToken)) {
-                user = entry.getKey();
-            }
-        }
-        return user;
+        return usersAuthTokens.get(authToken); // No need for iteration
     }
 }
