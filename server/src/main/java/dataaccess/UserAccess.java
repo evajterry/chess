@@ -24,16 +24,9 @@ public class UserAccess implements UserDAO{
         return usersAuthTokens.containsKey(authToken);
     }
 
-    public void logoutUser(String authToken) { // this might be causing an issue
+    public void logoutUser(String authToken) {
         // initialize variable here
         usersAuthTokens.remove(authToken);
-//        String user = "";
-//        for (Map.Entry<String, String> entry : usersAuthTokens.entrySet()) {
-//            if (entry.getValue().equals(authToken)) {
-//                user = entry.getKey();
-//            }
-//        }
-//        usersAuthTokens.remove(user);
     }
 
     public String registerUser(UserData u) {
