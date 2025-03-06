@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class UserAccess implements UserDAO{
+public class UserAccess implements UserDAO {
     private final HashMap<String, UserData> users = new HashMap<>();
     private final HashMap<String, String> usersAuthTokens = new HashMap<>(); // this might be the wrong way to do this
     // store authtoken username
@@ -14,7 +14,6 @@ public class UserAccess implements UserDAO{
         return u.username();
     }
 
-    @Override
     public void deleteAllData() {
         users.clear();
         usersAuthTokens.clear();

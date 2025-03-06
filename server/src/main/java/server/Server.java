@@ -27,7 +27,7 @@ public class Server {
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
         GameAccess gameAccess = new GameAccess(userAccess);
 
-        this.authService = new AuthService(new AuthAccess());
+        this.authService = new AuthService(new AuthAccess()); // sql !!!!!
         this.gameService = new GameService(gameAccess, userAccess);  // Pass gameAccess to GameService
         this.userService = new UserService(userAccess);
 

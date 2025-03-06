@@ -1,6 +1,11 @@
 package dataaccess;
 
+import handlers.exception.ResponseException;
+import model.GameData;
 import model.UserData;
+
+import java.util.List;
+import java.util.Map;
 
 public interface UserDAO {
     void deleteAllData();
