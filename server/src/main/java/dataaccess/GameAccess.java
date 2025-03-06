@@ -6,7 +6,7 @@ import model.GameData;
 
 import java.util.*;
 
-public class GameAccess {
+public class GameAccess implements GameDAO {
     private final HashMap<Integer, GameData> game = new HashMap<>();
     private final ArrayList<Integer> idList = new ArrayList<>();
     private final UserAccess userAccess;
