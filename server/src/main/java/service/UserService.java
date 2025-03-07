@@ -6,6 +6,8 @@ import handlers.exception.*;
 import model.UserData;
 import org.eclipse.jetty.client.api.Response;
 
+import java.sql.SQLException;
+
 public class UserService {
     private final UserAccess userAccess;
     private final SqlUserAccess sqlUserAccess;
@@ -32,7 +34,7 @@ public class UserService {
         return userAccess.userLoggedIn(authToken);
     }
 
-    public Object registerUser(UserData user) throws ResponseException, DataAccessException {
+    public Object registerUser(UserData user) throws ResponseException, DataAccessException, SQLException {
         if (alreadyRegistered(user)) {
             throw new ResponseException(403, "Error: already taken"); // here's probably where I'd throw an error
         }

@@ -5,7 +5,9 @@ import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class SqlUserAccess {
     private final DBConfig configuration;
@@ -24,8 +26,7 @@ public class SqlUserAccess {
         return true;
     }
 
-    public String registerUser(UserData u) throws DataAccessException {
-        UserData newUser = new UserData(u.username(), u.email(), u.password());
+    public String registerUser(UserData u) throws DataAccessException, SQLException {
         String newAuthToken = AuthAccess.createAuthToken();
         String insertQuery = "INSERT INTO UserData (username, email, password, json) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -35,14 +36,65 @@ public class SqlUserAccess {
             ps.setString(3, u.password()); // hash password
             ps.setString(4, "{}");
             ps.executeUpdate();
+
         } catch (SQLException e) {
             if (e.getMessage().contains("Duplicate entry")) {
                 throw new DataAccessException("Username or email already exists");
             }
             throw new DataAccessException("Error registering user");
         }
-
+        String username = u.username();
+        addAuthDataHelper(newAuthToken, username);
         return newAuthToken;
+    }
+
+    private void addAuthDataHelper(String authToken, String username) throws SQLException, DataAccessException {
+        String authUserDataQuery = "INSERT INTO AuthData (authToken, username, json) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(authUserDataQuery);
+            ps.setString(1, authToken);
+            ps.setString(2, username);
+            ps.setString(3, "{}");
+            ps.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error registering user");
+        }
+    }
+
+    public void deleteAllData() throws ResponseException {
+        var statement = "TRUNCATE AuthData"; // might not need to do this bc AuthAccess deletes AuthData ?
+        var statement2 = "TRUNCATE UserData";
+        configuration.executeUpdate(statement2);
+        configuration.executeUpdate(statement);
+    }
+
+    public String loginUser(UserData u) {
+        String username = u.username();
+        String queryString = "SELECT * FROM UserData WHERE username = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(queryString)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.print(rs.next());
+                    String newAuthToken = AuthAccess.createAuthToken();
+                    addAuthDataHelper(newAuthToken, username);
+                    return newAuthToken;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return "Error: unauthorized";
+    }
+
+    public Boolean isCorrectPassword(UserData user) {
+        UserData dataBaseUser = users.get(user.username());
+        String correctPassword = dataBaseUser.password();
+        return Objects.equals(user.password(), correctPassword);
     }
 
     private final String[] createStatements = {

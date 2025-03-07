@@ -8,6 +8,8 @@ import handlers.exception.*;
 import service.*;
 import model.UserData;
 
+import java.sql.SQLException;
+
 public class RegisterUser {
     private final UserService userService;
     private final AuthService authService;
@@ -29,7 +31,7 @@ public class RegisterUser {
         } catch (ResponseException e) {
             res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
-        } catch (DataAccessException e) {
+        } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
     }

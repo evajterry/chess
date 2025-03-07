@@ -1,6 +1,7 @@
 package service;
 
 import handlers.exception.ResponseException;
+import model.UserData;
 import org.junit.jupiter.api.*;
 
 import java.sql.*;
@@ -91,6 +92,60 @@ class DBConfigTest {
             }
         } catch (ResponseException | DataAccessException | SQLException e) {
             fail("Auth token insertion failed: " + e.getMessage());
+        }
+    }
+    @Test
+    @Order(4)
+    void testRegisterUser() {
+        try {
+            SqlUserAccess userAccess = new SqlUserAccess();
+            UserData testUser = new UserData("testUser", "test@example.com", "password123");
+
+            String authToken = userAccess.registerUser(testUser);
+
+            assertNotNull(authToken, "Auth token should not be null");
+
+            // Verify the user was inserted
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM UserData WHERE username = ?")) {
+                ps.setString(1, "testUser");
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    assertTrue(rs.next(), "User should exist in the database");
+                    assertEquals("test@example.com", rs.getString("email"), "Email should match");
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            fail("User registration failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Test
+    @Order(5)
+    void testLoginUserSuccess() {
+        try {
+            SqlUserAccess userAccess = new SqlUserAccess();
+            UserData testUser = new UserData("testUser", "test@example.com", "password123");
+            userAccess.registerUser(testUser);
+
+            String returnedAuthToken = userAccess.loginUser(testUser);
+
+            assertNotNull(returnedAuthToken, "Auth token should not be null");
+
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM AuthData WHERE authToken = ?")) {
+                ps.setString(1, returnedAuthToken);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    assertTrue(rs.next(), "Auth token should exist in the database");
+                    assertEquals(returnedAuthToken, rs.getString("authToken"), "Inserted auth token should match");
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            fail("Login user test failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
         }
     }
 }

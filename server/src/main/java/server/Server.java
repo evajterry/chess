@@ -22,9 +22,13 @@ public class Server {
     private final ListGames listGamesHandler;
 
     public Server() throws ResponseException, DataAccessException {
-        SqlUserAccess sqlUserAccess = null;
-        SqlAuthAccess sqlAuthAccess = null;
-        SqlGameAccess sqlGameAccess = null;
+//        SqlUserAccess sqlUserAccess = null;
+//        SqlAuthAccess sqlAuthAccess = null;
+//        SqlGameAccess sqlGameAccess = null;
+
+        SqlUserAccess sqlUserAccess = new SqlUserAccess();  // Instantiate here
+        SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
+        SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess);
 
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
         GameAccess gameAccess = new GameAccess(userAccess);
