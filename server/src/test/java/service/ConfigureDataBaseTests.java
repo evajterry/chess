@@ -148,4 +148,19 @@ class DBConfigTest {
             throw new RuntimeException(e);
         }
     }
+    @Test
+    @Order(6)
+    void testLoginUserUnauthorized() {
+        try {
+            SqlUserAccess userAccess = new SqlUserAccess();
+            UserData nonExistentUser = new UserData("nonExistentUser", "nonexistent@example.com", "wrongpassword");
+            String result = userAccess.loginUser(nonExistentUser);
+            assertEquals("Error: unauthorized", result, "Login should fail for a non-existent user");
+
+        } catch (DataAccessException e) {
+            fail("Login user test failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

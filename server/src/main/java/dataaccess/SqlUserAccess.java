@@ -71,16 +71,16 @@ public class SqlUserAccess {
     public String loginUser(UserData u) {
         String username = u.username();
         String queryString = "SELECT * FROM UserData WHERE username = ?";
-
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(queryString)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    System.out.print(rs.next());
-                    String newAuthToken = AuthAccess.createAuthToken();
-                    addAuthDataHelper(newAuthToken, username);
-                    return newAuthToken;
+                    if (isCorrectPassword(u)) {
+                        String newAuthToken = AuthAccess.createAuthToken();
+                        addAuthDataHelper(newAuthToken, username);
+                        return newAuthToken;
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -92,9 +92,22 @@ public class SqlUserAccess {
     }
 
     public Boolean isCorrectPassword(UserData user) {
-        UserData dataBaseUser = users.get(user.username());
-        String correctPassword = dataBaseUser.password();
-        return Objects.equals(user.password(), correctPassword);
+        String enteredPassword = user.password();
+        String username = user.username();
+        String queryString = "SELECT password FROM UserData WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+            PreparedStatement ps = conn.prepareStatement(queryString)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String correctPassword = rs.getString("password");
+                    return Objects.equals(enteredPassword, correctPassword);
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     private final String[] createStatements = {
