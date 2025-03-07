@@ -12,17 +12,21 @@ import java.util.UUID;
 public class SqlAuthAccess implements AuthDAO {
     private DBConfig configuration;
 
-    public void SqlAuthAccess() throws ResponseException, DataAccessException {
-        this.configuration = configuration;
-
+    public SqlAuthAccess() throws ResponseException, DataAccessException {
+        this.configuration = new DBConfig();
         configuration.configureDatabase(createStatements);
     }
+
     private final HashMap<String, String> auth = new HashMap<>(); // auth getting stored somewhere else?
 
     public void insertAuthToken(String authToken) throws ResponseException, DataAccessException {
         var statement = "INSERT INTO AuthData (authToken, username, json) VALUES (?, ?, ?)";
         var json = new Gson().toJson(authToken);
-        var id = configuration.executeUpdate(statement, authToken, getUserName(authToken));
+        var username = getUserName(authToken);
+        if (username == null) {
+            throw new DataAccessException("Username not found for authToken: " + authToken);
+        }
+        configuration.executeUpdate(statement, authToken, username, json);
     }
 
     public String getUserName(String authToken) throws DataAccessException {

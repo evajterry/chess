@@ -1,4 +1,6 @@
 package service;
+import dataaccess.DataAccessException;
+import dataaccess.SqlUserAccess;
 import dataaccess.UserAccess;
 import handlers.exception.*;
 import model.UserData;
@@ -6,9 +8,11 @@ import org.eclipse.jetty.client.api.Response;
 
 public class UserService {
     private final UserAccess userAccess;
+    private final SqlUserAccess sqlUserAccess;
 
-    public UserService(UserAccess userAccess) {
+    public UserService(UserAccess userAccess, SqlUserAccess sqlUserAccess) throws ResponseException, DataAccessException {
         this.userAccess = userAccess;
+        this.sqlUserAccess = new SqlUserAccess();
     }
 
     public void deleteAllData() throws ResponseException {
@@ -28,14 +32,14 @@ public class UserService {
         return userAccess.userLoggedIn(authToken);
     }
 
-    public Object registerUser(UserData user) throws ResponseException {
+    public Object registerUser(UserData user) throws ResponseException, DataAccessException {
         if (alreadyRegistered(user)) {
             throw new ResponseException(403, "Error: already taken"); // here's probably where I'd throw an error
         }
         if (!isValidUser(user)) {
             throw new ResponseException(400, "Error: bad request");
         }
-        return userAccess.registerUser(user);
+        return sqlUserAccess.registerUser(user);
     }
 
     public Object loginUser(UserData user) throws ResponseException {

@@ -1,9 +1,7 @@
 
 package server;
 
-import dataaccess.AuthAccess;
-import dataaccess.GameAccess;
-import dataaccess.UserAccess;
+import dataaccess.*;
 import handlers.*;
 import handlers.exception.ResponseException;
 import service.AuthService;
@@ -23,13 +21,17 @@ public class Server {
     private final JoinGame joinGameHandler;
     private final ListGames listGamesHandler;
 
-    public Server() {
+    public Server() throws ResponseException, DataAccessException {
+        SqlUserAccess sqlUserAccess = null;
+        SqlAuthAccess sqlAuthAccess = null;
+        SqlGameAccess sqlGameAccess = null;
+
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
         GameAccess gameAccess = new GameAccess(userAccess);
 
-        this.authService = new AuthService(new AuthAccess()); // sql !!!!!
-        this.gameService = new GameService(gameAccess, userAccess);  // Pass gameAccess to GameService
-        this.userService = new UserService(userAccess);
+        this.authService = new AuthService(sqlAuthAccess); // sql !!!!!
+        this.gameService = new GameService(sqlGameAccess, sqlUserAccess);  // Pass gameAccess to GameService
+        this.userService = new UserService(userAccess, sqlUserAccess);
 
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
         this.registerUserHandler = new RegisterUser(userService, authService); // update

@@ -1,5 +1,7 @@
 package service;
 import dataaccess.GameAccess;
+import dataaccess.SqlGameAccess;
+import dataaccess.SqlUserAccess;
 import dataaccess.UserAccess;
 import handlers.exception.*;
 import model.GameData;
@@ -12,16 +14,18 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GameService {
-    private final GameAccess gameAccess;
-    private final UserAccess userAccess;
+    private final SqlGameAccess sqlGameAccess;
+    private final SqlUserAccess sqlUserAccess;
+//    private final GameAccess gameAccess;
+//    private final UserAccess userAccess;
 
-    public GameService(GameAccess gameAccess, UserAccess userAccess) {
-        this.gameAccess = gameAccess;
-        this.userAccess = userAccess;
+    public GameService(SqlGameAccess sqlGameAccess, SqlUserAccess sqlUserAccess) {
+        this.sqlGameAccess = sqlGameAccess;
+        this.sqlUserAccess = sqlUserAccess;
     }
 
     public void deleteAllData() throws ResponseException {
-        gameAccess.deleteAllData();
+        sqlGameAccess.deleteAllData();
     }
 
     public Object createNewGame(String authToken, String gameName) throws ResponseException {
@@ -33,14 +37,14 @@ public class GameService {
         if (!isValidGameRequest(gameName)) {
             throw new ResponseException(400, "Error: bad request");
         }
-        return gameAccess.createNewGame(authToken, gameName);
+        return sqlGameAccess.createNewGame(authToken, gameName);
     }
 
     public List<Map<String, Object>> listGames(String authToken) throws ResponseException {
         if (!isValidAuthToken(authToken)) {
             throw new ResponseException(401, "Error: authToken issue");
         }
-        return gameAccess.listGames(authToken);
+        return sqlGameAccess.listGames(authToken);
     }
 
     public boolean joinNewGame(String authToken, int gameID, String reqTeam) throws ResponseException {
@@ -56,10 +60,10 @@ public class GameService {
             throw new ResponseException(400, "Error: bad team color request");
         }else {
             System.out.print(authToken + "\n" + gameID + "\n" + reqTeam);
-            if (!gameAccess.joinNewGame(authToken, gameID, reqTeam)) {
+            if (!sqlGameAccess.joinNewGame(authToken, gameID, reqTeam)) {
                 throw new ResponseException(403, "Error: already taken");
             }
-            return gameAccess.joinNewGame(authToken, gameID, reqTeam);
+            return sqlGameAccess.joinNewGame(authToken, gameID, reqTeam);
         }
     }
 
@@ -76,6 +80,6 @@ public class GameService {
     }
 
     private boolean isValidAuthToken(String authToken) {
-        return userAccess.userLoggedIn(authToken);
+        return sqlUserAccess.userLoggedIn(authToken);
     }
 }

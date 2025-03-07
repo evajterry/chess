@@ -3,10 +3,7 @@ package service;
 import handlers.exception.ResponseException;
 import org.junit.jupiter.api.*;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 import dataaccess.*;
 
@@ -15,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class) // Ensures tests run in order
 class DBConfigTest {
     private static DBConfig dbConfig;
+    private static SqlAuthAccess authAccess;
 
     @BeforeAll
     static void setUp() throws ResponseException, DataAccessException {
@@ -66,6 +64,33 @@ class DBConfigTest {
 
         } catch (ResponseException | DataAccessException | SQLException e) {
             fail("Database update failed: " + e.getMessage());
+        }
+    }
+
+    @Test
+    @Order(3)
+    void testInsertAuthToken() {
+        try {
+            try {
+                authAccess = new SqlAuthAccess();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize authAccess", e);
+            }
+            String authToken = "test-token";
+            authAccess.insertAuthToken(authToken);
+
+            // Verify the token was inserted
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT authToken FROM AuthData WHERE authToken = ?")) {
+                ps.setString(1, authToken);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    assertTrue(rs.next(), "Auth token should exist in the database");
+                    assertEquals(authToken, rs.getString("authToken"), "Inserted auth token should match");
+                }
+            }
+        } catch (ResponseException | DataAccessException | SQLException e) {
+            fail("Auth token insertion failed: " + e.getMessage());
         }
     }
 }
