@@ -20,12 +20,6 @@ public class SqlUserAccess {
         return true;
     }
 
-    public boolean userExists(UserData u) {
-        String username = u.username();
-
-        return true;
-    }
-
     public String registerUser(UserData u) throws DataAccessException, SQLException {
         String newAuthToken = AuthAccess.createAuthToken();
         String insertQuery = "INSERT INTO UserData (username, email, password, json) VALUES (?, ?, ?, ?)";
@@ -102,6 +96,23 @@ public class SqlUserAccess {
                 if (rs.next()) {
                     String correctPassword = rs.getString("password");
                     return Objects.equals(enteredPassword, correctPassword);
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    public Boolean userExists(UserData u) {
+        String username = u.username();
+        String queryString = "SELECT username FROM UserData WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(queryString)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return true;
                 }
             }
         } catch (SQLException | DataAccessException e) {

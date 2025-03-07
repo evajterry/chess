@@ -163,4 +163,36 @@ class DBConfigTest {
             throw new RuntimeException(e);
         }
     }
+
+    @Test
+    @Order(7)
+    void testUserExists_UserExists() {
+        try {
+            SqlUserAccess userAccess = new SqlUserAccess();
+            UserData testUser = new UserData("testUser", "test@example.com", "password123");
+            userAccess.registerUser(testUser);
+
+            assertTrue(userAccess.userExists(testUser), "User should exist in the database");
+
+        } catch (DataAccessException e) {
+            fail("User existence check failed: " + e.getMessage());
+        } catch (ResponseException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Test
+    @Order(8)
+    void testUserExists_UserDoesNotExist() {
+        try {
+            SqlUserAccess userAccess = new SqlUserAccess();
+            UserData testUser = new UserData("nonExistentUser", "nonexistent@example.com", "password123");
+
+            assertFalse(userAccess.userExists(testUser), "User should not exist in the database");
+
+        } catch (DataAccessException e) {
+            fail("User existence check failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
