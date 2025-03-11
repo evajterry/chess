@@ -28,13 +28,13 @@ public class Server {
 
         SqlUserAccess sqlUserAccess = new SqlUserAccess();  // Instantiate here
         SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
-        SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess);
+        SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
 
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
         GameAccess gameAccess = new GameAccess(userAccess);
 
         this.authService = new AuthService(sqlAuthAccess); // sql !!!!!
-        this.gameService = new GameService(sqlGameAccess, sqlUserAccess);  // Pass gameAccess to GameService
+        this.gameService = new GameService(sqlGameAccess, sqlUserAccess, sqlAuthAccess);  // Pass gameAccess to GameService
         this.userService = new UserService(userAccess, sqlUserAccess);
 
         this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);

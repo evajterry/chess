@@ -1,8 +1,5 @@
 package service;
-import dataaccess.GameAccess;
-import dataaccess.SqlGameAccess;
-import dataaccess.SqlUserAccess;
-import dataaccess.UserAccess;
+import dataaccess.*;
 import handlers.exception.*;
 import model.GameData;
 import model.UserData;
@@ -16,12 +13,14 @@ import java.util.Objects;
 public class GameService {
     private final SqlGameAccess sqlGameAccess;
     private final SqlUserAccess sqlUserAccess;
+    private final SqlAuthAccess sqlAuthAccess;
 //    private final GameAccess gameAccess;
 //    private final UserAccess userAccess;
 
-    public GameService(SqlGameAccess sqlGameAccess, SqlUserAccess sqlUserAccess) {
+    public GameService(SqlGameAccess sqlGameAccess, SqlUserAccess sqlUserAccess, SqlAuthAccess sqlAuthAccess) {
         this.sqlGameAccess = sqlGameAccess;
         this.sqlUserAccess = sqlUserAccess;
+        this.sqlAuthAccess = sqlAuthAccess;
     }
 
     public void deleteAllData() throws ResponseException {
@@ -80,6 +79,6 @@ public class GameService {
     }
 
     private boolean isValidAuthToken(String authToken) {
-        return sqlUserAccess.userLoggedIn(authToken);
+        return sqlAuthAccess.userLoggedIn(authToken);
     }
 }

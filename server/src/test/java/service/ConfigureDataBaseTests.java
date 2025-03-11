@@ -5,6 +5,8 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 
 import java.sql.*;
+import java.util.List;
+import java.util.Map;
 
 import dataaccess.*;
 
@@ -27,7 +29,15 @@ class DBConfigTest {
                     username VARCHAR(256) NOT NULL,
                     json TEXT DEFAULT NULL
                 ) ENGINE=InnoDB;
+                """,
                 """
+                CREATE TABLE IF NOT EXISTS Games (
+                    gameID INT AUTO_INCREMENT PRIMARY KEY,
+                    whiteUsername VARCHAR(256) NOT NULL,
+                    blackUsername VARCHAR(256) NOT NULL,
+                    gameName VARCHAR(256) NOT NULL
+                );
+            """
         };
         dbConfig.configureDatabase(createStatements);
     }
@@ -191,6 +201,52 @@ class DBConfigTest {
 
         } catch (DataAccessException e) {
             fail("User existence check failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    @Order(9)
+    void testListGames() {
+        try {
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                         "INSERT INTO Games (gameID, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?)")) {
+                ps.setInt(1, 1);
+                ps.setString(2, "player1");
+                ps.setString(3, "player2");
+                ps.setString(4, "Test Game");
+                ps.executeUpdate();
+            }
+
+            String authToken = "valid-auth-token";
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                         "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
+                ps.setString(1, authToken);
+                ps.setString(2, "testUser");
+                ps.executeUpdate();
+            }
+
+            // Call the method under test
+            SqlUserAccess sqlUserAccess = new SqlUserAccess();
+            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
+            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
+            List<Map<String, Object>> gamesList = sqlGameAccess.listGames(authToken);
+
+            // Assertions
+            assertNotNull(gamesList, "Games list should not be null");
+            assertEquals(1, gamesList.size(), "Should return one game");
+
+            Map<String, Object> game = gamesList.get(0);
+            assertEquals(1, game.get("gameID"), "Game ID should match");
+            assertEquals("player1", game.get("whiteUsername"), "White username should match");
+            assertEquals("player2", game.get("blackUsername"), "Black username should match");
+            assertEquals("Test Game", game.get("gameName"), "Game name should match");
+
+        } catch (SQLException | DataAccessException e) {
+            fail("listGames test failed: " + e.getMessage());
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }

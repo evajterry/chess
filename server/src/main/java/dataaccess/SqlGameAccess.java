@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import handlers.exception.ResponseException;
 import model.GameData;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -13,9 +15,11 @@ public class SqlGameAccess implements GameDAO {
     private final ArrayList<Integer> idList = new ArrayList<>();
     private DBConfig configuration;
     private SqlUserAccess sqlUserAccess;
+    private SqlAuthAccess sqlAuthAccess;
 
-    public SqlGameAccess(SqlUserAccess sqlUserAccess) {
+    public SqlGameAccess(SqlUserAccess sqlUserAccess, SqlAuthAccess sqlAuthAccess) {
         this.sqlUserAccess = sqlUserAccess;
+        this.sqlAuthAccess = sqlAuthAccess;
     }
 
     public void deleteAllData() throws ResponseException {
@@ -42,27 +46,31 @@ public class SqlGameAccess implements GameDAO {
     }
 
     public List<Map<String, Object>> listGames(String authToken) throws ResponseException {
-        if (!isValidLogIn(authToken)) {
+        if (!sqlAuthAccess.userLoggedIn(authToken)) {
             throw new ResponseException(401, "Error: unauthorized");
         }
         List<Map<String, Object>> gamesList = new ArrayList<>();
-//        for (GameData gameData : game.values()) {
-//            String gameIDString = Integer.toString(gameData.gameID());
-//            String whiteUser = gameData.whiteUsername(); // maybe need to do : ? here
-//            String blackUser = gameData.blackUsername();
-//            String gameName = gameData.gameName();
-//
-//            Map<String, Object> gameMap = new HashMap<>();
-//            gameMap.put("gameID", gameIDString);
-//            gameMap.put("whiteUsername", whiteUser);
-//            gameMap.put("blackUsername", blackUser);
-//            gameMap.put("gameName", gameName);
-//            gamesList.add(gameMap);
-//        }
+
+        String query = "SELECT gameID, whiteUsername, blackUsername, gameName FROM Games";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> gameMap = new HashMap<>();
+                gameMap.put("gameID", rs.getInt("gameID"));
+                gameMap.put("whiteUsername", rs.getString("whiteUsername"));
+                gameMap.put("blackUsername", rs.getString("blackUsername"));
+                gameMap.put("gameName", rs.getString("gameName"));
+
+                gamesList.add(gameMap);
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         return gamesList;
     }
 
-    public boolean joinNewGame(String authToken, int gameID, String requestedTeam) {
+        public boolean joinNewGame(String authToken, int gameID, String requestedTeam) {
 //        String username = getUsername(authToken);
 //        if (isValidLogIn(authToken) && checkGameIDExists(gameID)) {
 //            GameData targetGame = game.get(gameID);
@@ -134,6 +142,7 @@ public class SqlGameAccess implements GameDAO {
     }
 
     private boolean isValidLogIn(String authToken) {
+        sqlAuthAccess.userLoggedIn(authToken);
         return true;
 //        return userAccess.userLoggedIn(authToken);
     }

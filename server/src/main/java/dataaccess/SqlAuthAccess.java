@@ -3,6 +3,9 @@ package dataaccess;
 import com.google.gson.Gson;
 import handlers.exception.ResponseException;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +30,20 @@ public class SqlAuthAccess implements AuthDAO {
             throw new DataAccessException("Username not found for authToken: " + authToken);
         }
         configuration.executeUpdate(statement, authToken, username, json);
+    }
+
+    public boolean userLoggedIn(String authToken) {
+        String query = "SELECT 1 FROM AuthData WHERE authToken = ? LIMIT 1";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, authToken);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException | DataAccessException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public String getUserName(String authToken) throws DataAccessException {

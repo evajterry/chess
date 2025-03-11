@@ -16,9 +16,7 @@ public class SqlUserAccess {
         this.configuration = new DBConfig();
         configuration.configureDatabase(createStatements);
     }
-    public boolean userLoggedIn(String authToken) {
-        return true;
-    }
+
 
     public String registerUser(UserData u) throws DataAccessException, SQLException {
         String newAuthToken = AuthAccess.createAuthToken();
@@ -90,7 +88,7 @@ public class SqlUserAccess {
         String username = user.username();
         String queryString = "SELECT password FROM UserData WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement ps = conn.prepareStatement(queryString)) {
+             PreparedStatement ps = conn.prepareStatement(queryString)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -123,16 +121,24 @@ public class SqlUserAccess {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS UserData (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `username` varchar(256) NOT NULL,
-              `email` varchar(256) NOT NULL,
-              `password` varchar(256) NOT NULL,
-              `json` TEXT DEFAULT NULL,
-              PRIMARY KEY (`id`),
-              INDEX (username),
-              INDEX (email)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    CREATE TABLE IF NOT EXISTS UserData (
+      `id` int NOT NULL AUTO_INCREMENT,
+      `username` varchar(256) NOT NULL,
+      `email` varchar(256) NOT NULL,
+      `password` varchar(256) NOT NULL,
+      `json` TEXT DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      INDEX (username),
+      INDEX (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    """,
             """
+    CREATE TABLE IF NOT EXISTS AuthTokens (
+      `token` VARCHAR(256) NOT NULL PRIMARY KEY,
+      `user_id` INT NOT NULL,
+      `expires_at` DATETIME DEFAULT NULL,
+      FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+    """
     };
 }
