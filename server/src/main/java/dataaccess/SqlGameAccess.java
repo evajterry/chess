@@ -70,37 +70,80 @@ public class SqlGameAccess implements GameDAO {
         return gamesList;
     }
 
-        public boolean joinNewGame(String authToken, int gameID, String requestedTeam) {
-//        String username = getUsername(authToken);
-//        if (isValidLogIn(authToken) && checkGameIDExists(gameID)) {
-//            GameData targetGame = game.get(gameID);
-//
-//            if (!isTeamReqTaken(targetGame, requestedTeam)) {
-//                GameData updatedGame = targetGame;
-//                if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
-//                    if (targetGame.whiteUsername() == null) {
-//                        updatedGame = updatedGame.updateWhiteUsername(username);
-//                    } else if (targetGame.blackUsername() == null) {
-//                        updatedGame = updatedGame.updateBlackUsername(username);
-//                    }
-//                }
-//                else if (targetGame.blackUsername() == null && Objects.equals(requestedTeam, "BLACK")) {
-//                    updatedGame = updatedGame.updateBlackUsername(username);
-//                }
-//                else if (targetGame.whiteUsername() == null && Objects.equals(requestedTeam, "WHITE")) {
-//                    updatedGame = updatedGame.updateWhiteUsername(username);
-//                }
-//                else if (targetGame.blackUsername() == null) {
-//                    updatedGame = updatedGame.updateBlackUsername(username);
-//                }
-//                else if (targetGame.whiteUsername() == null) {
-//                    updatedGame = updatedGame.updateWhiteUsername(username);
-//                }
+        public boolean joinNewGame(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+            if (!sqlAuthAccess.userLoggedIn(authToken)) {
+                throw new ResponseException(401, "Error: unauthorized");
+            }
+            String username = getUsername(authToken);
+            if (!checkGameIDExists(gameID)) {
+                throw new ResponseException(404, "Error: game not found");
+            }
+            GameData targetGame = getGameData(gameID);
+
+            if (isTeamReqTaken(targetGame, requestedTeam)) {
+                return false; // Team is already taken
+            }
+            GameData updatedGame = targetGame;
+            if (Objects.equals(requestedTeam, "WHITE")) {
+                if (targetGame.whiteUsername() == null) {
+                    updatedGame = updatedGame.updateWhiteUsername(username);
+                } else {
+                    throw new ResponseException(400, "Error: White team already taken");
+                }
+            } else if (Objects.equals(requestedTeam, "BLACK")) {
+                if (targetGame.blackUsername() == null) {
+                    updatedGame = updatedGame.updateBlackUsername(username);
+                } else {
+                    throw new ResponseException(400, "Error: Black team already taken");
+                }
+            } else if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
+                if (targetGame.whiteUsername() == null) {
+                    updatedGame = updatedGame.updateWhiteUsername(username);
+                } else if (targetGame.blackUsername() == null) {
+                    updatedGame = updatedGame.updateBlackUsername(username);
+                } else {
+                    throw new ResponseException(400, "Error: both teams are already taken");
+                }
+            } else {
+                throw new ResponseException(400, "Error: invalid team request");
+            } // need to update the game in the database
 //                game.put(gameID, updatedGame);
 //                return true;
 //            }
 //        }
         return false;
+    }
+
+    private GameData getGameData(int gameID) throws DataAccessException {
+        String query = "SELECT gameID, whiteUsername, blackUsername, gameName FROM Games WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(query)) {
+            ps.setInt(1, gameID);
+            try (var rs = ps.executeQuery()) {
+                // GameData(String whiteUsername, String blackUsername, int gameID, String gameName, ChessGame game) {
+                if (rs.next()) {
+                    int id = rs.getInt("gameID");
+                    String whiteUsername = rs.getString("whiteUsername");
+                    String blackUsername = rs.getString("blackUsername");
+                    String gameName = rs.getString("gameName");
+                    String gameDataString = rs.getString("game");
+                    ChessGame game = deserializeGame(gameDataString);
+                    return new GameData(whiteUsername, blackUsername, gameID, gameName, game);
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error retrieving game data for gameID: " + gameID);
+        }
+    }
+
+    private ChessGame deserializeGame(String gameDataString) throws DataAccessException {
+        try {
+            return new Gson().fromJson(gameDataString, ChessGame.class);
+        } catch (Exception e) {
+            throw new DataAccessException("Error deserializing game data");
+        }
     }
 
     public boolean isTeamReqTaken(GameData targetGame, String requestedTeam) {
@@ -115,17 +158,17 @@ public class SqlGameAccess implements GameDAO {
 
     private String getUsername(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT id, json FROM GameData WHERE id=?";
-            try (var ps = conn.prepareStatement(statement)) {
-//                ps.setInt(1, id);
+            String query = "SELECT username FROM AuthData WHERE authToken = ?";
+            try (var ps = conn.prepareStatement(query)) {
+                ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-//                        return readUsername(rs);
+                        return rs.getString("username");
                     }
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Error accessing database while retrieving username");
         }
         return null;
     }
@@ -138,7 +181,19 @@ public class SqlGameAccess implements GameDAO {
 //    }
 
     private boolean checkGameIDExists(int gameID) {
-        return(idList.contains(gameID));
+        String query = "SELECT COUNT(*) FROM Games WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(query)) {
+            ps.setInt(1, gameID);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     private boolean isValidLogIn(String authToken) {
@@ -161,7 +216,7 @@ public class SqlGameAccess implements GameDAO {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS GameData (
+            CREATE TABLE IF NOT EXISTS Games (
               `id` int NOT NULL AUTO_INCREMENT,
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
