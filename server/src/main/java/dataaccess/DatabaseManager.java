@@ -1,5 +1,7 @@
 package dataaccess;
 
+import handlers.exception.ResponseException;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -43,6 +45,9 @@ public class DatabaseManager {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
+
+            createTables();
+
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
@@ -67,6 +72,77 @@ public class DatabaseManager {
             return conn;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    /**
+     * Creates the necessary tables in the database if they do not already exist.
+     */
+    static void createTables() throws DataAccessException {
+        String GameData =
+            """
+                CREATE TABLE IF NOT EXISTS GameData (
+                    `id` int NOT NULL AUTO_INCREMENT,
+                    `whiteUsername` varchar(256),
+                    `blackUsername` varchar(256),
+                    `gameID` int NOT NULL,
+                    `gameName` varchar(256),
+                    `game` TEXT DEFAULT NULL, 
+                    PRIMARY KEY (`id`),
+                    INDEX(whiteUsername),
+                    INDEX(blackUsername),
+                    INDEX(gameID),
+                    INDEX(gameName),
+                    INDEX(game(255))
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                """;
+
+        String UserData =
+                """
+                CREATE TABLE IF NOT EXISTS UserData (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `username` varchar(256) NOT NULL,
+                  `email` varchar(256) NOT NULL,
+                  `password` varchar(256) NOT NULL,
+                  `json` TEXT DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  INDEX (username),
+                  INDEX (email)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """;
+
+        String AuthTokens =
+                """
+                CREATE TABLE IF NOT EXISTS AuthTokens (
+                  `token` VARCHAR(256) NOT NULL PRIMARY KEY,
+                  `user_id` INT NOT NULL,
+                  `expires_at` DATETIME DEFAULT NULL,
+                  FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """;
+
+        String AuthData =
+                """
+                CREATE TABLE IF NOT EXISTS AuthData (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `authToken` varchar(256) NOT NULL,
+                  `username` varchar(256) NOT NULL,
+                  `json` TEXT DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  INDEX(authToken),
+                  INDEX(username)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """;
+
+        try (var conn = getConnection();
+             var stmt = conn.createStatement()) {
+            stmt.executeUpdate(GameData);
+            stmt.executeUpdate(UserData);
+            stmt.executeUpdate(AuthTokens);
+            stmt.executeUpdate(AuthData);
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Error creating tables: " + e.getMessage());
         }
     }
 }

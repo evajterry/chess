@@ -31,15 +31,49 @@ class DBConfigTest {
                 ) ENGINE=InnoDB;
                 """,
                 """
-                CREATE TABLE IF NOT EXISTS Games (
-                    gameID INT AUTO_INCREMENT PRIMARY KEY,
-                    whiteUsername VARCHAR(256) NOT NULL,
-                    blackUsername VARCHAR(256) NOT NULL,
-                    gameName VARCHAR(256) NOT NULL
-                );
-            """
+                CREATE TABLE IF NOT EXISTS GameData (
+                  `whiteUsername` varchar(256),
+                  `blackUsername` varchar(256),
+                  `gameID` int NOT NULL AUTO_INCREMENT,
+                  `gameName` varchar(256),
+                  `game` TEXT DEFAULT NULL,
+                  PRIMARY KEY (`gameID`),
+                  INDEX(gameID),
+                  INDEX(gameName)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS UserData (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `username` varchar(256) NOT NULL,
+                  `email` varchar(256) NOT NULL,
+                  `password` varchar(256) NOT NULL,
+                  `json` TEXT DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  INDEX (username),
+                  INDEX (email)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS AuthTokens (
+                  `token` VARCHAR(256) NOT NULL PRIMARY KEY,
+                  `user_id` INT NOT NULL,
+                  `expires_at` DATETIME DEFAULT NULL,
+                  FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """
         };
         dbConfig.configureDatabase(createStatements);
+    }
+
+    @AfterAll
+    static void tearDown() throws ResponseException, DataAccessException {
+        String[] deleteStatements = {
+                "DELETE FROM AuthTokens WHERE user_id IN (SELECT id FROM AuthData);",  // Delete dependent rows first
+                "DROP TABLE IF EXISTS AuthData;",
+                "DROP TABLE IF EXISTS GameData;"
+        };
+        dbConfig.configureDatabase(deleteStatements);
     }
 
     @Test
@@ -104,6 +138,7 @@ class DBConfigTest {
             fail("Auth token insertion failed: " + e.getMessage());
         }
     }
+
     @Test
     @Order(4)
     void testRegisterUser() {
@@ -131,6 +166,7 @@ class DBConfigTest {
             throw new RuntimeException(e);
         }
     }
+
     @Test
     @Order(5)
     void testLoginUserSuccess() {
@@ -158,6 +194,7 @@ class DBConfigTest {
             throw new RuntimeException(e);
         }
     }
+
     @Test
     @Order(6)
     void testLoginUserUnauthorized() {
@@ -190,6 +227,7 @@ class DBConfigTest {
             throw new RuntimeException(e);
         }
     }
+
     @Test
     @Order(8)
     void testUserExists_UserDoesNotExist() {
@@ -210,30 +248,30 @@ class DBConfigTest {
     @Order(9)
     void testListGames() {
         try {
-            try (Connection conn = DatabaseManager.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO Games (gameID, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?)")) {
-                ps.setInt(1, 1);
-                ps.setString(2, "player1");
-                ps.setString(3, "player2");
-                ps.setString(4, "Test Game");
-                ps.executeUpdate();
-            }
+            try (Connection conn = DatabaseManager.getConnection()) {
+                // Insert game data
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
+                    ps.setString(1, "player1");
+                    ps.setString(2, "player2");
+                    ps.setString(3, "Test Game");
+                    ps.executeUpdate();
+                }
 
-            String authToken = "valid-auth-token";
-            try (Connection conn = DatabaseManager.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
-                ps.setString(1, authToken);
-                ps.setString(2, "testUser");
-                ps.executeUpdate();
+                // Insert auth data
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
+                    ps.setString(1, "valid-auth-token");
+                    ps.setString(2, "testUser");
+                    ps.executeUpdate();
+                }
             }
 
             // Call the method under test
             SqlUserAccess sqlUserAccess = new SqlUserAccess();
             SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
             SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
-            List<Map<String, Object>> gamesList = sqlGameAccess.listGames(authToken);
+            List<Map<String, Object>> gamesList = sqlGameAccess.listGames("valid-auth-token");
 
             // Assertions
             assertNotNull(gamesList, "Games list should not be null");
@@ -249,6 +287,132 @@ class DBConfigTest {
             fail("listGames test failed: " + e.getMessage());
         } catch (ResponseException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    @Order(10)
+    void testListTwoGames() {
+        try {
+            try (Connection conn = DatabaseManager.getConnection()) {
+                // Insert first game data
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
+                    ps.setString(1, "player1");
+                    ps.setString(2, "player2");
+                    ps.setString(3, "Test Game 1");
+                    ps.executeUpdate();
+                }
+
+                // Insert second game data
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
+                    ps.setString(1, "player3");
+                    ps.setString(2, "player4");
+                    ps.setString(3, "Test Game 2");
+                    ps.executeUpdate();
+                }
+
+                // Insert auth data
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
+                    ps.setString(1, "valid-auth-token");
+                    ps.setString(2, "testUser");
+                    ps.executeUpdate();
+                }
+            }
+
+            // Call the method under test
+            SqlUserAccess sqlUserAccess = new SqlUserAccess();
+            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
+            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
+            List<Map<String, Object>> gamesList = sqlGameAccess.listGames("valid-auth-token");
+
+            // Assertions
+            assertNotNull(gamesList, "Games list should not be null");
+            assertEquals(2, gamesList.size(), "Should return two games");
+
+            // Assert for the first game
+            Map<String, Object> game1 = gamesList.get(0);
+            assertEquals(1, game1.get("gameID"), "First game ID should match");
+            assertEquals("player1", game1.get("whiteUsername"), "First game white username should match");
+            assertEquals("player2", game1.get("blackUsername"), "First game black username should match");
+            assertEquals("Test Game 1", game1.get("gameName"), "First game name should match");
+
+            // Assert for the second game
+            Map<String, Object> game2 = gamesList.get(1);
+            assertEquals(2, game2.get("gameID"), "Second game ID should match");
+            assertEquals("player3", game2.get("whiteUsername"), "Second game white username should match");
+            assertEquals("player4", game2.get("blackUsername"), "Second game black username should match");
+            assertEquals("Test Game 2", game2.get("gameName"), "Second game name should match");
+
+        } catch (SQLException | DataAccessException e) {
+            fail("testListTwoGames failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    @Order(11)
+    void testJoinNewGame_Success() {
+        try {
+            SqlUserAccess sqlUserAccess = new SqlUserAccess();
+            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
+            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
+
+            String authToken = "valid-auth-token";
+            String requestedTeam = "WHITE";
+
+            // Insert auth data
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                         "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
+                ps.setString(1, authToken);
+                ps.setString(2, "testUser");
+                ps.executeUpdate();
+            }
+
+            // Create a new game and retrieve the generated gameID
+            int gameID;
+            try (Connection conn = DatabaseManager.getConnection()) {
+                gameID = Integer.parseInt(sqlGameAccess.createNewGame(authToken, "game name"));
+            }
+
+            // Now, verify the game is created
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM GameData WHERE gameID = ?")) {
+                ps.setInt(1, gameID);
+                ResultSet rs = ps.executeQuery();
+                assertTrue(rs.next(), "Game should exist in the database");
+
+                // Verify the game is correctly inserted
+                assertNull(rs.getString("whiteUsername"), "White username should be null initially");
+                assertNull(rs.getString("blackUsername"), "Black username should be null initially");
+            }
+
+            // Now try to join the game
+            boolean result = sqlGameAccess.joinNewGame(authToken, gameID, requestedTeam);
+
+            assertTrue(result, "User should successfully join the game");
+
+            // Verify the player joined the game
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM GameData WHERE gameID = ?")) {
+                ps.setInt(1, gameID);
+                ResultSet rs = ps.executeQuery();
+                assertTrue(rs.next(), "Game should exist in the database");
+
+                if ("WHITE".equals(requestedTeam)) {
+                    assertEquals("testUser", rs.getString("whiteUsername"), "White username should be testUser");
+                } else if ("BLACK".equals(requestedTeam)) {
+                    assertEquals("testUser", rs.getString("blackUsername"), "Black username should be testUser");
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            fail("Test failed: " + e.getMessage());
+        } catch (ResponseException e) {
+            fail("ResponseException: " + e.getMessage());
         }
     }
 }

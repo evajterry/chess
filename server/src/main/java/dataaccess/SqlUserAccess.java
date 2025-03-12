@@ -8,8 +8,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
+import org.mindrot.jbcrypt.BCrypt;
 
-public class SqlUserAccess {
+
+public class SqlUserAccess implements UserDAO {
     private final DBConfig configuration;
 
     public SqlUserAccess() throws ResponseException, DataAccessException {
@@ -19,13 +21,14 @@ public class SqlUserAccess {
 
 
     public String registerUser(UserData u) throws DataAccessException, SQLException {
+        String hashedPassword = BCrypt.hashpw(u.password(), BCrypt.gensalt());
         String newAuthToken = AuthAccess.createAuthToken();
         String insertQuery = "INSERT INTO UserData (username, email, password, json) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(insertQuery);
             ps.setString(1, u.username());
             ps.setString(2, u.email());
-            ps.setString(3, u.password()); // hash password
+            ps.setString(3, hashedPassword); // hash password
             ps.setString(4, "{}");
             ps.executeUpdate();
 
@@ -92,8 +95,8 @@ public class SqlUserAccess {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String correctPassword = rs.getString("password");
-                    return Objects.equals(enteredPassword, correctPassword);
+                    String hashedPassword = rs.getString("password");
+                    return hashedPassword != null && BCrypt.checkpw(enteredPassword, hashedPassword);
                 }
             }
         } catch (SQLException | DataAccessException e) {
@@ -118,6 +121,23 @@ public class SqlUserAccess {
         }
         return false;
     }
+
+    public void logoutUser(String authToken) throws DataAccessException {
+        String deleteQuery = "DELETE FROM AuthTokens WHERE token = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
+            ps.setString(1, authToken);
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DataAccessException("Error: Invalid authToken or already logged out.");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error logging out user.");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private final String[] createStatements = {
             """

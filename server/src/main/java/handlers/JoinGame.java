@@ -1,6 +1,7 @@
 package handlers;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import model.GameData;
 import spark.Request;
 import spark.Response;
@@ -32,6 +33,8 @@ public class JoinGame {
         } catch (ResponseException e) {
             res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }

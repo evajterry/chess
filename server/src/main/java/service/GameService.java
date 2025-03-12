@@ -46,7 +46,7 @@ public class GameService {
         return sqlGameAccess.listGames(authToken);
     }
 
-    public boolean joinNewGame(String authToken, int gameID, String reqTeam) throws ResponseException {
+    public boolean joinNewGame(String authToken, int gameID, String reqTeam) throws ResponseException, DataAccessException {
         if (!isValidAuthToken(authToken)) {
             throw new ResponseException(401, "Error: authToken issue");
         }

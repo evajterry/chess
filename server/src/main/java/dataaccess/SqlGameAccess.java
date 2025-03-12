@@ -18,6 +18,7 @@ public class SqlGameAccess implements GameDAO {
     private SqlAuthAccess sqlAuthAccess;
 
     public SqlGameAccess(SqlUserAccess sqlUserAccess, SqlAuthAccess sqlAuthAccess) {
+        this.configuration = new DBConfig();
         this.sqlUserAccess = sqlUserAccess;
         this.sqlAuthAccess = sqlAuthAccess;
     }
@@ -34,11 +35,11 @@ public class SqlGameAccess implements GameDAO {
             int gameID = generateNewID();
 
             GameData newGame = new GameData(null, null, gameID, gameName, new ChessGame());
-            String jsonGameState = new Gson().toJson(newGame); // this is 아마 안 맞다
+            String jsonGameState = new Gson().toJson(new ChessGame()); // this is 아마 안 맞다
             var statement = "INSERT INTO GameData (whiteUsername, blackUsername, gameID, gameName, newGame) VALUES (?, ?, ?, ?, ?)";
 
-            var json = new Gson().toJson(authToken); // this is ㅇㅏ마 wrong
-            var id = configuration.executeUpdate(statement, null, null, gameID, jsonGameState, gameName);
+            var id = configuration.executeUpdate(statement, null, null, gameID, gameName, jsonGameState);
+
             return String.valueOf(gameID);
         } else {
             return "Error: unauthorized";
@@ -51,7 +52,7 @@ public class SqlGameAccess implements GameDAO {
         }
         List<Map<String, Object>> gamesList = new ArrayList<>();
 
-        String query = "SELECT gameID, whiteUsername, blackUsername, gameName FROM Games";
+        String query = "SELECT gameID, whiteUsername, blackUsername, gameName FROM GameData";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
@@ -81,7 +82,7 @@ public class SqlGameAccess implements GameDAO {
             GameData targetGame = getGameData(gameID);
 
             if (isTeamReqTaken(targetGame, requestedTeam)) {
-                return false; // Team is already taken
+                return false;
             }
             GameData updatedGame = targetGame;
             if (Objects.equals(requestedTeam, "WHITE")) {
@@ -106,16 +107,36 @@ public class SqlGameAccess implements GameDAO {
                 }
             } else {
                 throw new ResponseException(400, "Error: invalid team request");
-            } // need to update the game in the database
-//                game.put(gameID, updatedGame);
-//                return true;
-//            }
-//        }
-        return false;
+            }
+        return updateGameInDatabase(updatedGame);
     }
 
-    private GameData getGameData(int gameID) throws DataAccessException {
-        String query = "SELECT gameID, whiteUsername, blackUsername, gameName FROM Games WHERE gameID = ?";
+    private boolean updateGameInDatabase(GameData updatedGame) {
+        String updateQuery = "UPDATE GameData SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(updateQuery)) {
+                ps.setString(1, updatedGame.whiteUsername());
+                ps.setString(2, updatedGame.blackUsername());
+                ps.setString(3, updatedGame.gameName());
+                String serializedGame = serializeGame(updatedGame.game()); // here
+                ps.setString(4, serializedGame);
+                ps.setInt(5, updatedGame.gameID());
+
+                int rowsAffected = ps.executeUpdate();
+
+                return rowsAffected == 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String serializeGame(ChessGame game) {
+        return new Gson().toJson(game);
+    }
+
+    public GameData getGameData(int gameID) throws DataAccessException {
+        String query = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM GameData WHERE gameID = ?";
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(query)) {
             ps.setInt(1, gameID);
@@ -127,8 +148,8 @@ public class SqlGameAccess implements GameDAO {
                     String blackUsername = rs.getString("blackUsername");
                     String gameName = rs.getString("gameName");
                     String gameDataString = rs.getString("game");
-                    ChessGame game = deserializeGame(gameDataString);
-                    return new GameData(whiteUsername, blackUsername, gameID, gameName, game);
+                    ChessGame game = deserializeGame(gameDataString); // need to make this type ChessGame
+                    return new GameData(whiteUsername, blackUsername, id, gameName, game);
                 } else {
                     return null;
                 }
@@ -139,10 +160,13 @@ public class SqlGameAccess implements GameDAO {
     }
 
     private ChessGame deserializeGame(String gameDataString) throws DataAccessException {
+        if (gameDataString == null || gameDataString.isEmpty()) {
+            return new ChessGame();
+        }
         try {
             return new Gson().fromJson(gameDataString, ChessGame.class);
         } catch (Exception e) {
-            throw new DataAccessException("Error deserializing game data");
+            throw new DataAccessException("Failed to deserialize ChessGame");
         }
     }
 
@@ -172,16 +196,9 @@ public class SqlGameAccess implements GameDAO {
         }
         return null;
     }
-//
-//    private String readUsername (ResultSet rs) throws SQLException {
-//        var id = rs.getInt("id");
-//        var json = rs.getString("json");
-//        var pet = new Gson().fromJson(json, GameAccess.class);
-//        return pet.setId(id);
-//    }
 
     private boolean checkGameIDExists(int gameID) {
-        String query = "SELECT COUNT(*) FROM Games WHERE gameID = ?";
+        String query = "SELECT COUNT(*) FROM GameData WHERE gameID = ?";
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(query)) {
             ps.setInt(1, gameID);
@@ -197,36 +214,42 @@ public class SqlGameAccess implements GameDAO {
     }
 
     private boolean isValidLogIn(String authToken) {
-        sqlAuthAccess.userLoggedIn(authToken);
-        return true;
-//        return userAccess.userLoggedIn(authToken);
+        return sqlAuthAccess.userLoggedIn(authToken);
     }
 
-    private int generateNewID() {
-        if (idList.isEmpty()) {
-            idList.add(1);
-            return 1;
-        } else {
-            int lastID = idList.getLast();
-            lastID++;
-            idList.add(lastID);
-            return lastID;
+    private int generateNewID() throws ResponseException {
+        String query = "SELECT MAX(gameID) FROM GameData";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                int maxID = rs.getInt(1);
+                return (rs.wasNull()) ? 1 : maxID + 1;
+            }
+        } catch (SQLException e) {
+            throw new ResponseException(500, "Error generating new ID: " + e.getMessage());
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
+
+        throw new ResponseException(500, "Failed to generate new ID");
     }
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS Games (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `whiteUsername` varchar(256),
-              `blackUsername` varchar(256),
-              `gameID` int NOT NULL,
-              `gameName` varchar(256),
-              `game` TEXT DEFAULT NULL,
-              PRIMARY KEY (`id`),
-              INDEX(type),
-              INDEX(name)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            CREATE TABLE IF NOT EXISTS GameData (
+                `id` int NOT NULL AUTO_INCREMENT,
+                `whiteUsername` varchar(256),
+                `blackUsername` varchar(256),
+                `gameID` int NOT NULL,
+                `gameName` varchar(256),
+                `game` TEXT DEFAULT NULL,  -- Add the 'game' column here
+                PRIMARY KEY (`id`),
+                INDEX(type),
+                INDEX(name)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             """
     };
 }

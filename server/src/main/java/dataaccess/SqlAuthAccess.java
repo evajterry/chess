@@ -13,7 +13,7 @@ import java.util.UUID;
 
 
 public class SqlAuthAccess implements AuthDAO {
-    private DBConfig configuration;
+    private final DBConfig configuration;
 
     public SqlAuthAccess() throws ResponseException, DataAccessException {
         this.configuration = new DBConfig();
@@ -33,7 +33,7 @@ public class SqlAuthAccess implements AuthDAO {
     }
 
     public boolean userLoggedIn(String authToken) {
-        String query = "SELECT 1 FROM AuthData WHERE authToken = ? LIMIT 1";
+        String query = "SELECT * FROM AuthData WHERE authToken = ? LIMIT 1";
         try (Connection conn = DatabaseManager.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, authToken);
@@ -81,8 +81,8 @@ public class SqlAuthAccess implements AuthDAO {
               `username` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`id`),
-              INDEX(type),
-              INDEX(name)
+              INDEX(authToken),
+              INDEX(username)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

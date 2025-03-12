@@ -21,17 +21,17 @@ public class UserService {
         userAccess.deleteAllData();
     }
 
-    public void logoutUser(String authToken) throws ResponseException {
+    public void logoutUser(String authToken) throws ResponseException, DataAccessException {
         if (!isValidAuthToken(authToken)) {
             throw new ResponseException(401, "Error: not authorized");
         } else {
-            userAccess.logoutUser(authToken);
+            sqlUserAccess.logoutUser(authToken);
         }
 //        return userAccess.logoutUser(authToken);
     }
 
     private boolean isValidAuthToken(String authToken) {
-        return userAccess.userLoggedIn(authToken);
+        return sqlUserAccess.userLoggedIn(authToken);
     }
 
     public Object registerUser(UserData user) throws ResponseException, DataAccessException, SQLException {
