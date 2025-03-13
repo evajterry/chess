@@ -28,7 +28,17 @@ public class DBConfig {
                 "DELETE FROM GameData;",
                 "DELETE FROM UserData;"
         };
-        configureDatabase(); // got rid of params
+
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : deleteStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new ResponseException(500, String.format("Unable to delete data: %s", ex.getMessage()));
+        }
+//        configureDatabase(); // got rid of params
     }
 
 
