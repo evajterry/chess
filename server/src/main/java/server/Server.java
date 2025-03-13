@@ -1,4 +1,3 @@
-
 package server;
 
 import dataaccess.*;
@@ -14,7 +13,7 @@ public class Server {
     private final GameService gameService;
     private final UserService userService;
     private final DeleteAllData deleteAllDataHandler;
-    private final RegisterUser registerUserHandler; // update
+    private final RegisterUser registerUserHandler;
     private final LoginUser loginUserHandler;
     private final LogoutUser logoutUserHandler;
     private final CreateNewGame createNewGameHandler;
@@ -22,27 +21,57 @@ public class Server {
     private final ListGames listGamesHandler;
     private final DBConfig configuration;
 
-    public Server() throws ResponseException, DataAccessException {
+    public Server() {
+        AuthService tempAuthService = null;
+        GameService tempGameService = null;
+        UserService tempUserService = null;
+        DeleteAllData tempDeleteAllDataHandler = null;
+        RegisterUser tempRegisterUserHandler = null;
+        LoginUser tempLoginUserHandler = null;
+        LogoutUser tempLogoutUserHandler = null;
+        CreateNewGame tempCreateNewGameHandler = null;
+        JoinGame tempJoinGameHandler = null;
+        ListGames tempListGamesHandler = null;
+        DBConfig tempConfiguration = null;
 
-        UserAccess userAccess = new UserAccess();  // Create UserAccess instance
-        GameAccess gameAccess = new GameAccess(userAccess);
+        try {
+            UserAccess userAccess = new UserAccess();
+            GameAccess gameAccess = new GameAccess(userAccess);
 
-        SqlUserAccess sqlUserAccess = new SqlUserAccess();  // Instantiate here
-        SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
-        SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlAuthAccess, gameAccess);
+            SqlUserAccess sqlUserAccess = new SqlUserAccess();
+            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
+            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlAuthAccess, gameAccess);
 
-        this.authService = new AuthService(sqlAuthAccess); // sql !!!!!
-        this.gameService = new GameService(sqlGameAccess, sqlUserAccess, sqlAuthAccess);  // Pass gameAccess to GameService
-        this.userService = new UserService(userAccess, sqlUserAccess);
+            tempAuthService = new AuthService(sqlAuthAccess);
+            tempGameService = new GameService(sqlGameAccess, sqlUserAccess, sqlAuthAccess);
+            tempUserService = new UserService(userAccess, sqlUserAccess);
 
-        this.deleteAllDataHandler = new DeleteAllData(authService, userService, gameService);
-        this.registerUserHandler = new RegisterUser(userService, authService); // update
-        this.loginUserHandler = new LoginUser(userService, authService);
-        this.logoutUserHandler = new LogoutUser(userService);
-        this.createNewGameHandler = new CreateNewGame(gameService, authService);
-        this.joinGameHandler = new JoinGame(gameService);
-        this.listGamesHandler = new ListGames(gameService);
-        this.configuration = new DBConfig();
+            tempDeleteAllDataHandler = new DeleteAllData(tempAuthService, tempUserService, tempGameService);
+            tempRegisterUserHandler = new RegisterUser(tempUserService, tempAuthService);
+            tempLoginUserHandler = new LoginUser(tempUserService, tempAuthService);
+            tempLogoutUserHandler = new LogoutUser(tempUserService);
+            tempCreateNewGameHandler = new CreateNewGame(tempGameService, tempAuthService);
+            tempJoinGameHandler = new JoinGame(tempGameService);
+            tempListGamesHandler = new ListGames(tempGameService);
+            tempConfiguration = new DBConfig();
+
+        } catch (ResponseException | DataAccessException e) {
+            System.err.println("Error initializing Server: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Assign initialized values
+        this.authService = tempAuthService;
+        this.gameService = tempGameService;
+        this.userService = tempUserService;
+        this.deleteAllDataHandler = tempDeleteAllDataHandler;
+        this.registerUserHandler = tempRegisterUserHandler;
+        this.loginUserHandler = tempLoginUserHandler;
+        this.logoutUserHandler = tempLogoutUserHandler;
+        this.createNewGameHandler = tempCreateNewGameHandler;
+        this.joinGameHandler = tempJoinGameHandler;
+        this.listGamesHandler = tempListGamesHandler;
+        this.configuration = tempConfiguration;
     }
 
     public int run(int desiredPort) {
@@ -84,7 +113,6 @@ public class Server {
         }
     }
 
-
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
         res.status(ex.statusCode());
         res.body(ex.toJson());
@@ -100,6 +128,4 @@ public class Server {
         Spark.stop();
         Spark.awaitStop();
     }
-
 }
-
