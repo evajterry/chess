@@ -36,23 +36,6 @@ public class SqlAuthAccess implements AuthDAO {
         return false;
     }
 
-    public String getUserName(String authToken) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username FROM AuthData WHERE authToken=?";
-            try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, authToken);
-                try (var rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getString("username");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-    }
-
     public static String createAuthToken() {
         return UUID.randomUUID().toString();
     }
@@ -62,19 +45,5 @@ public class SqlAuthAccess implements AuthDAO {
         configuration.executeUpdate(statement);
     }
 
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS AuthData (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `authToken` varchar(256) NOT NULL,
-              `username` varchar(256) NOT NULL,
-              `json` TEXT DEFAULT NULL,
-              PRIMARY KEY (`id`),
-              INDEX(authToken),
-              INDEX(username)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
 
 }
