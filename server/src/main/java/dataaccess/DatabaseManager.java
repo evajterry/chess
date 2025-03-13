@@ -1,7 +1,5 @@
 package dataaccess;
 
-import handlers.exception.ResponseException;
-
 import java.sql.*;
 import java.util.Properties;
 
@@ -79,7 +77,7 @@ public class DatabaseManager {
      * Creates the necessary tables in the database if they do not already exist.
      */
     static void createTables() throws DataAccessException {
-        String GameData =
+        String gameData =
             """
                 CREATE TABLE IF NOT EXISTS GameData (
                     `gameID` int NOT NULL AUTO_INCREMENT,
@@ -95,7 +93,7 @@ public class DatabaseManager {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
                 """;
 
-        String UserData =
+        String userData =
                 """
                 CREATE TABLE IF NOT EXISTS UserData (
                   `id` int NOT NULL AUTO_INCREMENT,
@@ -109,7 +107,7 @@ public class DatabaseManager {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
                 """;
 
-        String AuthData =
+        String authData =
                 """
                 CREATE TABLE IF NOT EXISTS AuthData (
                   `id` int NOT NULL AUTO_INCREMENT,
@@ -124,9 +122,9 @@ public class DatabaseManager {
 
         try (var conn = getConnection();
              var stmt = conn.createStatement()) {
-            stmt.executeUpdate(GameData);
-            stmt.executeUpdate(UserData);
-            stmt.executeUpdate(AuthData);
+            stmt.executeUpdate(gameData);
+            stmt.executeUpdate(userData);
+            stmt.executeUpdate(authData);
 
         } catch (SQLException e) {
             throw new DataAccessException("Error creating tables: " + e.getMessage());

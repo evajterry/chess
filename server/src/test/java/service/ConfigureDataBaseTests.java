@@ -143,7 +143,7 @@ class DBConfigTest {
 
     @Test
     @Order(7)
-    void testUserExists_UserExists() {
+    void testUserExistsUserExists() {
         try {
             SqlUserAccess userAccess = new SqlUserAccess();
             UserData testUser = new UserData("testUser", "test@example.com", "password123");
@@ -160,7 +160,7 @@ class DBConfigTest {
 
     @Test
     @Order(8)
-    void testUserExists_UserDoesNotExist() {
+    void testUserExistsUserDoesNotExist() {
         try {
             SqlUserAccess userAccess = new SqlUserAccess();
             UserData testUser = new UserData("nonExistentUser", "nonexistent@example.com", "password123");
@@ -177,7 +177,7 @@ class DBConfigTest {
 
     @Test
     @Order(11)
-    void testJoinNewGame_Success() {
+    void testJoinNewGameSuccess() {
         try {
             SqlUserAccess sqlUserAccess = new SqlUserAccess();
             SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
