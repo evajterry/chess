@@ -45,33 +45,45 @@ public class Server {
         this.configuration = new DBConfig();
     }
 
-    public int run(int desiredPort) throws ResponseException, DataAccessException {
-        Spark.port(desiredPort);
+    public int run(int desiredPort) {
+        try {
+            Spark.port(desiredPort);
 
-        Spark.staticFiles.location("web");
-        Spark.get("/db", (req, res) -> "Database route active!");
+            Spark.staticFiles.location("web");
+            Spark.get("/db", (req, res) -> "Database route active!");
 
-        // start database here
-        configuration.configureDatabase();
+            // Start database here
+            configuration.configureDatabase();
 
-        // Register your endpoints and handle exceptions here.
-        Spark.delete("/db", deleteAllDataHandler::handle);
-        Spark.post("/user", registerUserHandler::handle);
-        Spark.post("/session", loginUserHandler::handle);
-        Spark.delete("/session", logoutUserHandler::handle);
-        Spark.post("/game", createNewGameHandler::handle);
-        Spark.put("/game", joinGameHandler::handle);
-        Spark.get("/game", listGamesHandler::handle);
+            // Register your endpoints and handle exceptions here.
+            Spark.delete("/db", deleteAllDataHandler::handle);
+            Spark.post("/user", registerUserHandler::handle);
+            Spark.post("/session", loginUserHandler::handle);
+            Spark.delete("/session", logoutUserHandler::handle);
+            Spark.post("/game", createNewGameHandler::handle);
+            Spark.put("/game", joinGameHandler::handle);
+            Spark.get("/game", listGamesHandler::handle);
 
-        Spark.exception(ResponseException.class, this::exceptionHandler);
-        Spark.exception(Exception.class, this::exceptionHandler);
-        // This line initializes the server and can be removed once you have a functioning endpoint
-        Spark.init();
-        System.out.println(Spark.routes());
+            Spark.exception(ResponseException.class, this::exceptionHandler);
+            Spark.exception(Exception.class, this::exceptionHandler);
 
-        Spark.awaitInitialization();
-        return Spark.port();
+            // This line initializes the server and can be removed once you have a functioning endpoint
+            Spark.init();
+            System.out.println(Spark.routes());
+
+            Spark.awaitInitialization();
+            return Spark.port();
+        } catch (DataAccessException e) {
+            System.err.println("Error initializing the server: " + e.getMessage());
+            e.printStackTrace();
+            return -1; // Indicating an error
+        } catch (Exception e) {
+            System.err.println("Unexpected error occurred: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
+        }
     }
+
 
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
         res.status(ex.statusCode());
