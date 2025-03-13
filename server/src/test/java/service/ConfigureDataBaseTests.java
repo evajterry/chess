@@ -15,12 +15,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class) // Ensures tests run in order
 class DBConfigTest {
     private static DBConfig dbConfig;
-    private static SqlAuthAccess authAccess;
+    private static SqlGameAccess sqlGameAccess;
+    private static SqlAuthAccess sqlAuthAccess; // You should instantiate or mock this
+    private static GameAccess gameAccess;
+    private static UserAccess userAccess;
 
     @BeforeAll
     static void setUp() throws ResponseException, DataAccessException {
+
         dbConfig = new DBConfig();
         dbConfig.configureDatabase();
+
+        // Instantiate your dependencies
+        sqlAuthAccess = new SqlAuthAccess(); // Assuming this is a real implementation
+        userAccess = new UserAccess();
+        gameAccess = new GameAccess(userAccess); // Assuming this is a real implementation or mock
+
+        // Create the SqlGameAccess instance
+        sqlGameAccess = new SqlGameAccess(sqlAuthAccess, gameAccess);
     }
 
     @AfterAll
@@ -181,7 +193,7 @@ class DBConfigTest {
         try {
             SqlUserAccess sqlUserAccess = new SqlUserAccess();
             SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
-            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
+            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlAuthAccess, gameAccess);
 
             String authToken = "valid-auth-token";
             String requestedTeam = "WHITE";

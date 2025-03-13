@@ -87,6 +87,7 @@ public class GameAccess implements GameDAO {
     }
 
     public boolean isTeamReqTaken(GameData targetGame, String requestedTeam) {
+
         if (Objects.equals(requestedTeam, "BLACK") && targetGame.blackUsername() != null) {
             return true;
         } else if (Objects.equals(requestedTeam, "WHITE") && targetGame.whiteUsername() != null) {

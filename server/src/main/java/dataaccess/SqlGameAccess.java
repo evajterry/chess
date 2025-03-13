@@ -12,15 +12,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class SqlGameAccess implements GameDAO {
-    private final ArrayList<Integer> idList = new ArrayList<>();
     private DBConfig configuration;
-    private SqlUserAccess sqlUserAccess;
     private SqlAuthAccess sqlAuthAccess;
+    private GameAccess gameAccess;
 
-    public SqlGameAccess(SqlUserAccess sqlUserAccess, SqlAuthAccess sqlAuthAccess) {
+    public SqlGameAccess(SqlAuthAccess sqlAuthAccess, GameAccess gameAccess) {
         this.configuration = new DBConfig();
-        this.sqlUserAccess = sqlUserAccess;
         this.sqlAuthAccess = sqlAuthAccess;
+        this.gameAccess = gameAccess;
     }
 
     public void deleteAllData() throws ResponseException {
@@ -167,13 +166,7 @@ public class SqlGameAccess implements GameDAO {
     }
 
     public boolean isTeamReqTaken(GameData targetGame, String requestedTeam) {
-        if (Objects.equals(requestedTeam, "BLACK") && targetGame.blackUsername() != null) {
-            return true;
-        } else if (Objects.equals(requestedTeam, "WHITE") && targetGame.whiteUsername() != null) {
-            return true;
-        } else if (Objects.equals(requestedTeam, "WHITE/BLACK") && targetGame.whiteUsername() != null && targetGame.blackUsername() != null) {
-            return true;
-        } return false;
+        return gameAccess.isTeamReqTaken(targetGame, requestedTeam);
     }
 
     private String getUsername(String authToken) throws DataAccessException {
