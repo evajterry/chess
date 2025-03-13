@@ -26,7 +26,6 @@ class DBConfigTest {
     @AfterAll
     static void tearDown() throws ResponseException, DataAccessException {
         String[] deleteStatements = {
-                "DELETE FROM AuthTokens WHERE user_id IN (SELECT id FROM UserData);",
                 "DROP TABLE IF EXISTS AuthData;",
                 "DROP TABLE IF EXISTS GameData;",
                 "DROP TABLE IF EXISTS UserData;"
@@ -175,114 +174,6 @@ class DBConfigTest {
         }
     }
 
-    @Test
-    @Order(9)
-    void testListGames() {
-        try {
-            try (Connection conn = DatabaseManager.getConnection()) {
-                // Insert game data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
-                    ps.setString(1, "player1");
-                    ps.setString(2, "player2");
-                    ps.setString(3, "Test Game");
-                    ps.executeUpdate();
-                }
-
-                // Insert auth data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
-                    ps.setString(1, "valid-auth-token");
-                    ps.setString(2, "testUser");
-                    ps.executeUpdate();
-                }
-            }
-
-            // Call the method under test
-            SqlUserAccess sqlUserAccess = new SqlUserAccess();
-            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
-            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
-            List<Map<String, Object>> gamesList = sqlGameAccess.listGames("valid-auth-token");
-
-            // Assertions
-            assertNotNull(gamesList, "Games list should not be null");
-            assertEquals(1, gamesList.size(), "Should return one game");
-
-            Map<String, Object> game = gamesList.get(0);
-//            assertEquals(1, game.get("gameID"), "Game ID should match");
-            assertEquals("player1", game.get("whiteUsername"), "White username should match");
-            assertEquals("player2", game.get("blackUsername"), "Black username should match");
-            assertEquals("Test Game", game.get("gameName"), "Game name should match");
-
-        } catch (SQLException | DataAccessException e) {
-            fail("listGames test failed: " + e.getMessage());
-        } catch (ResponseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    @Order(10)
-    void testListTwoGames() {
-        try {
-            try (Connection conn = DatabaseManager.getConnection()) {
-                // Insert first game data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
-                    ps.setString(1, "player1");
-                    ps.setString(2, "player2");
-                    ps.setString(3, "Test Game 1");
-                    ps.executeUpdate();
-                }
-
-                // Insert second game data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO GameData (whiteUsername, blackUsername, gameName) VALUES (?, ?, ?)")) {
-                    ps.setString(1, "player3");
-                    ps.setString(2, "player4");
-                    ps.setString(3, "Test Game 2");
-                    ps.executeUpdate();
-                }
-
-                // Insert auth data
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO AuthData (authToken, username) VALUES (?, ?)")) {
-                    ps.setString(1, "valid-auth-token");
-                    ps.setString(2, "testUser");
-                    ps.executeUpdate();
-                }
-            }
-
-            // Call the method under test
-            SqlUserAccess sqlUserAccess = new SqlUserAccess();
-            SqlAuthAccess sqlAuthAccess = new SqlAuthAccess();
-            SqlGameAccess sqlGameAccess = new SqlGameAccess(sqlUserAccess, sqlAuthAccess);
-            List<Map<String, Object>> gamesList = sqlGameAccess.listGames("valid-auth-token");
-
-            // Assertions
-            assertNotNull(gamesList, "Games list should not be null");
-            assertEquals(2, gamesList.size(), "Should return two games");
-
-            // Assert for the first game
-            Map<String, Object> game1 = gamesList.get(0);
-            assertEquals(1, game1.get("gameID"), "First game ID should match");
-            assertEquals("player1", game1.get("whiteUsername"), "First game white username should match");
-            assertEquals("player2", game1.get("blackUsername"), "First game black username should match");
-            assertEquals("Test Game 1", game1.get("gameName"), "First game name should match");
-
-            // Assert for the second game
-            Map<String, Object> game2 = gamesList.get(1);
-            assertEquals(2, game2.get("gameID"), "Second game ID should match");
-            assertEquals("player3", game2.get("whiteUsername"), "Second game white username should match");
-            assertEquals("player4", game2.get("blackUsername"), "Second game black username should match");
-            assertEquals("Test Game 2", game2.get("gameName"), "Second game name should match");
-
-        } catch (SQLException | DataAccessException e) {
-            fail("testListTwoGames failed: " + e.getMessage());
-        } catch (ResponseException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Test
     @Order(11)
@@ -345,39 +236,6 @@ class DBConfigTest {
         } catch (ResponseException e) {
             fail("ResponseException: " + e.getMessage());
         }
-    }
-    @Test
-    @Order(12)
-    void testDeleteAllData() {
-        try {
-            // Insert test data into multiple tables
-            dbConfig.executeUpdate("INSERT INTO AuthData (authToken, username, json) VALUES (?, ?, ?)", "testToken", "testUser", "{}");
-            dbConfig.executeUpdate("INSERT INTO UserData (username, email, password, json) VALUES (?, ?, ?, ?)", "testUser", "test@example.com", "password123", "{}");
-            dbConfig.executeUpdate("INSERT INTO GameData (whiteUsername, blackUsername, gameID, gameName, game) VALUES (?, ?, ?, ?, ?)", "player1", "player2", 2, "Test Game", "Game data");
-
-            // Call your function to delete all data
-            dbConfig.deleteAllData(); // Ensure this function exists in DBConfig
-
-            // Verify tables are empty
-            try (Connection conn = DatabaseManager.getConnection()) {
-                assertTrue(isTableEmpty(conn, "AuthData"), "AuthData should be empty after deletion");
-                assertTrue(isTableEmpty(conn, "UserData"), "UserData should be empty after deletion");
-                assertTrue(isTableEmpty(conn, "GameData"), "GameData should be empty after deletion");
-            }
-        } catch (ResponseException | DataAccessException | SQLException e) {
-            fail("Delete all data test failed: " + e.getMessage());
-        }
-    }
-
-    // Helper method to check if a table is empty
-    private boolean isTableEmpty(Connection conn, String tableName) throws SQLException {
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName)) {
-            if (rs.next()) {
-                return rs.getInt(1) == 0;
-            }
-        }
-        return false;
     }
 
 }

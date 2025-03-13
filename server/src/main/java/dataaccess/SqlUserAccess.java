@@ -124,7 +124,7 @@ public class SqlUserAccess implements UserDAO {
     }
 
     public void logoutUser(String authToken) throws DataAccessException {
-        String deleteQuery = "DELETE FROM AuthData WHERE token = ?";
+        String deleteQuery = "DELETE FROM AuthData WHERE authToken = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
             ps.setString(1, authToken);
@@ -140,7 +140,7 @@ public class SqlUserAccess implements UserDAO {
     }
 
     public boolean userLoggedIn(String authToken) throws DataAccessException {
-        String query = "SELECT * FROM AuthTokens WHERE token = ? LIMIT 1";
+        String query = "SELECT * FROM AuthData WHERE authToken = ? LIMIT 1";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, authToken);
