@@ -60,7 +60,6 @@ public class Server {
             e.printStackTrace();
         }
 
-        // Assign initialized values
         this.authService = tempAuthService;
         this.gameService = tempGameService;
         this.userService = tempUserService;

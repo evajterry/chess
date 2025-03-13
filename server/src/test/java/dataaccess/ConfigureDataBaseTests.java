@@ -1,14 +1,10 @@
-package service;
+package dataaccess;
 
 import handlers.exception.ResponseException;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Map;
-
-import dataaccess.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
