@@ -111,16 +111,6 @@ public class DatabaseManager {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
                 """;
 
-        String AuthTokens =
-                """
-                CREATE TABLE IF NOT EXISTS AuthTokens (
-                  `token` VARCHAR(256) NOT NULL PRIMARY KEY,
-                  `user_id` INT NOT NULL,
-                  `expires_at` DATETIME DEFAULT NULL,
-                  FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """;
-
         String AuthData =
                 """
                 CREATE TABLE IF NOT EXISTS AuthData (
@@ -138,7 +128,6 @@ public class DatabaseManager {
              var stmt = conn.createStatement()) {
             stmt.executeUpdate(GameData);
             stmt.executeUpdate(UserData);
-            stmt.executeUpdate(AuthTokens);
             stmt.executeUpdate(AuthData);
 
         } catch (SQLException e) {

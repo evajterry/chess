@@ -17,7 +17,7 @@ public class SqlAuthAccess implements AuthDAO {
 
     public SqlAuthAccess() throws ResponseException, DataAccessException {
         this.configuration = new DBConfig();
-        configuration.configureDatabase(createStatements);
+//        configuration.configureDatabase(createStatements);
     }
 
     private final HashMap<String, String> auth = new HashMap<>(); // auth getting stored somewhere else?

@@ -24,7 +24,7 @@ public class RegisterUser {
         try {
             var user = new Gson().fromJson(req.body(), UserData.class);
             String authToken = (String) userService.registerUser(user);
-            authService.addAuthToken(authToken);
+//            authService.addAuthToken(authToken);
             res.status(200);
             return Serializer.registeredUser(user, authToken);
 

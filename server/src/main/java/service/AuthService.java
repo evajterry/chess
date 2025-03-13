@@ -15,9 +15,4 @@ public class AuthService {
     public void deleteAllData() throws ResponseException {
         sqlAuthAccess.deleteAllData();
     }
-
-    public void addAuthToken(String authToken) throws ResponseException, DataAccessException {
-        sqlAuthAccess.insertAuthToken(authToken);
-    }
-
 }

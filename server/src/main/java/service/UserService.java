@@ -18,7 +18,7 @@ public class UserService {
     }
 
     public void deleteAllData() throws ResponseException {
-        userAccess.deleteAllData();
+        sqlUserAccess.deleteAllData();
     }
 
     public void logoutUser(String authToken) throws ResponseException, DataAccessException {
@@ -30,7 +30,7 @@ public class UserService {
 //        return userAccess.logoutUser(authToken);
     }
 
-    private boolean isValidAuthToken(String authToken) {
+    private boolean isValidAuthToken(String authToken) throws DataAccessException {
         return sqlUserAccess.userLoggedIn(authToken);
     }
 
@@ -45,11 +45,11 @@ public class UserService {
     }
 
     public Object loginUser(UserData user) throws ResponseException {
-        if (userAccess.userExists(user)) {
-            if (!userAccess.isCorrectPassword(user)) {
+        if (sqlUserAccess.userExists(user)) {
+            if (!sqlUserAccess.isCorrectPassword(user)) {
                 throw new ResponseException(401, "Error: password incorrect");
             }
-            return userAccess.loginUser(user);
+            return sqlUserAccess.loginUser(user);
         } else {
             throw new ResponseException(401, "Error: user does not exist");
         }
@@ -60,6 +60,6 @@ public class UserService {
     }
 
     public Boolean alreadyRegistered(UserData user) {
-        return userAccess.userExists(user);
+        return sqlUserAccess.userExists(user);
     }
 }

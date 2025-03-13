@@ -54,7 +54,7 @@ public class DatabaseTests {
 
         //create a game
         String gameName = "Test Game";
-        TestCreateResult createResult = serverFacade.createGame(new TestCreateRequest(gameName), auth);
+        TestCreateResult createResult = serverFacade.createGame(new TestCreateRequest(gameName), auth); // auth is null
 
         //join the game
         serverFacade.joinPlayer(new TestJoinRequest(ChessGame.TeamColor.WHITE, createResult.getGameID()), auth);
@@ -85,7 +85,7 @@ public class DatabaseTests {
     @DisplayName("Bcrypt")
     @Order(2)
     public void bcrypt() {
-        serverFacade.register(TEST_USER);
+        serverFacade.register(TEST_USER); // game data does not exist, throwing null pointer exception when iterating over
 
         executeForAllTables(this::checkTableForPassword);
     }
@@ -114,7 +114,7 @@ public class DatabaseTests {
             while (rs.next()) {
                 for (int i = 1; i <= columns; i++) {
                     String value = rs.getString(i);
-                    Assertions.assertFalse(value.contains(TEST_USER.getPassword()),
+                    Assertions.assertFalse(value.contains(TEST_USER.getPassword()), // getting null pntr in gamedata
                             "Found clear text password in database");
                 }
             }

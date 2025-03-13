@@ -20,6 +20,7 @@ public class Server {
     private final CreateNewGame createNewGameHandler;
     private final JoinGame joinGameHandler;
     private final ListGames listGamesHandler;
+    private final DBConfig configuration;
 
     public Server() throws ResponseException, DataAccessException {
 //        SqlUserAccess sqlUserAccess = null;
@@ -44,13 +45,17 @@ public class Server {
         this.createNewGameHandler = new CreateNewGame(gameService, authService);
         this.joinGameHandler = new JoinGame(gameService);
         this.listGamesHandler = new ListGames(gameService);
+        this.configuration = new DBConfig();
     }
 
-    public int run(int desiredPort) {
+    public int run(int desiredPort) throws ResponseException, DataAccessException {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
         Spark.get("/db", (req, res) -> "Database route active!");
+
+        // start database here
+        configuration.configureDatabase();
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", deleteAllDataHandler::handle);

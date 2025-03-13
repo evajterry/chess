@@ -1,6 +1,7 @@
 package handlers;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import spark.Request;
 import spark.Response;
 import handlers.exception.*;
@@ -25,6 +26,8 @@ public class LogoutUser {
         } catch (ResponseException e) {
             res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }

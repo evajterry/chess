@@ -22,15 +22,13 @@ public class LoginUser {
         try {
             var user = new Gson().fromJson(req.body(), UserData.class);
             String authToken = (String) userService.loginUser(user);
-            authService.addAuthToken(authToken);
+//            authService.addAuthToken(authToken);
             res.status(200);
             return Serializer.registeredUser(user, authToken); // update
 
         } catch (ResponseException e) {
             res.status(e.statusCode());
             return gson.toJson(new ErrorResponse(e.getMessage()));
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 }

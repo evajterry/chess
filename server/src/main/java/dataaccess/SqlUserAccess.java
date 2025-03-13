@@ -16,7 +16,7 @@ public class SqlUserAccess implements UserDAO {
 
     public SqlUserAccess() throws ResponseException, DataAccessException {
         this.configuration = new DBConfig();
-        configuration.configureDatabase(createStatements);
+//        configuration.configureDatabase(createStatements);
     }
 
 
@@ -57,10 +57,11 @@ public class SqlUserAccess implements UserDAO {
     }
 
     public void deleteAllData() throws ResponseException {
-        var statement = "TRUNCATE AuthData"; // might not need to do this bc AuthAccess deletes AuthData ?
+//        var statement = "TRUNCATE AuthData"; // might not need to do this bc AuthAccess deletes AuthData ?
         var statement2 = "TRUNCATE UserData";
         configuration.executeUpdate(statement2);
-        configuration.executeUpdate(statement);
+//        configuration.executeUpdate(statement);
+        // make sure delete all data is working
     }
 
     public String loginUser(UserData u) {
@@ -123,7 +124,7 @@ public class SqlUserAccess implements UserDAO {
     }
 
     public void logoutUser(String authToken) throws DataAccessException {
-        String deleteQuery = "DELETE FROM AuthTokens WHERE token = ?";
+        String deleteQuery = "DELETE FROM AuthData WHERE token = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
             ps.setString(1, authToken);
@@ -138,27 +139,16 @@ public class SqlUserAccess implements UserDAO {
         }
     }
 
-
-    private final String[] createStatements = {
-            """
-    CREATE TABLE IF NOT EXISTS UserData (
-      `id` int NOT NULL AUTO_INCREMENT,
-      `username` varchar(256) NOT NULL,
-      `email` varchar(256) NOT NULL,
-      `password` varchar(256) NOT NULL,
-      `json` TEXT DEFAULT NULL,
-      PRIMARY KEY (`id`),
-      INDEX (username),
-      INDEX (email)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-    """,
-            """
-    CREATE TABLE IF NOT EXISTS AuthTokens (
-      `token` VARCHAR(256) NOT NULL PRIMARY KEY,
-      `user_id` INT NOT NULL,
-      `expires_at` DATETIME DEFAULT NULL,
-      FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-    """
-    };
+    public boolean userLoggedIn(String authToken) throws DataAccessException {
+        String query = "SELECT * FROM AuthTokens WHERE token = ? LIMIT 1";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, authToken);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error checking login status.");
+        }
+    }
 }

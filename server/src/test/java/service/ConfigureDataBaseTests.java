@@ -20,60 +20,18 @@ class DBConfigTest {
     @BeforeAll
     static void setUp() throws ResponseException, DataAccessException {
         dbConfig = new DBConfig();
-        String[] createStatements = {
-                "DROP TABLE IF EXISTS AuthData;",
-                """
-                CREATE TABLE AuthData (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    authToken VARCHAR(256) NOT NULL,
-                    username VARCHAR(256) NOT NULL,
-                    json TEXT DEFAULT NULL
-                ) ENGINE=InnoDB;
-                """,
-                """
-                CREATE TABLE IF NOT EXISTS GameData (
-                  `whiteUsername` varchar(256),
-                  `blackUsername` varchar(256),
-                  `gameID` int NOT NULL AUTO_INCREMENT,
-                  `gameName` varchar(256),
-                  `game` TEXT DEFAULT NULL,
-                  PRIMARY KEY (`gameID`),
-                  INDEX(gameID),
-                  INDEX(gameName)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """,
-                """
-                CREATE TABLE IF NOT EXISTS UserData (
-                  `id` int NOT NULL AUTO_INCREMENT,
-                  `username` varchar(256) NOT NULL,
-                  `email` varchar(256) NOT NULL,
-                  `password` varchar(256) NOT NULL,
-                  `json` TEXT DEFAULT NULL,
-                  PRIMARY KEY (`id`),
-                  INDEX (username),
-                  INDEX (email)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """,
-                """
-                CREATE TABLE IF NOT EXISTS AuthTokens (
-                  `token` VARCHAR(256) NOT NULL PRIMARY KEY,
-                  `user_id` INT NOT NULL,
-                  `expires_at` DATETIME DEFAULT NULL,
-                  FOREIGN KEY (`user_id`) REFERENCES UserData(`id`) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """
-        };
-        dbConfig.configureDatabase(createStatements);
+        dbConfig.configureDatabase();
     }
 
     @AfterAll
     static void tearDown() throws ResponseException, DataAccessException {
         String[] deleteStatements = {
-                "DELETE FROM AuthTokens WHERE user_id IN (SELECT id FROM AuthData);",  // Delete dependent rows first
+                "DELETE FROM AuthTokens WHERE user_id IN (SELECT id FROM UserData);",
                 "DROP TABLE IF EXISTS AuthData;",
-                "DROP TABLE IF EXISTS GameData;"
+                "DROP TABLE IF EXISTS GameData;",
+                "DROP TABLE IF EXISTS UserData;"
         };
-        dbConfig.configureDatabase(deleteStatements);
+        dbConfig.configureDatabase();
     }
 
     @Test
@@ -109,33 +67,6 @@ class DBConfigTest {
 
         } catch (ResponseException | DataAccessException | SQLException e) {
             fail("Database update failed: " + e.getMessage());
-        }
-    }
-
-    @Test
-    @Order(3)
-    void testInsertAuthToken() {
-        try {
-            try {
-                authAccess = new SqlAuthAccess();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to initialize authAccess", e);
-            }
-            String authToken = "test-token";
-            authAccess.insertAuthToken(authToken);
-
-            // Verify the token was inserted
-            try (Connection conn = DatabaseManager.getConnection();
-                 PreparedStatement ps = conn.prepareStatement("SELECT authToken FROM AuthData WHERE authToken = ?")) {
-                ps.setString(1, authToken);
-
-                try (ResultSet rs = ps.executeQuery()) {
-                    assertTrue(rs.next(), "Auth token should exist in the database");
-                    assertEquals(authToken, rs.getString("authToken"), "Inserted auth token should match");
-                }
-            }
-        } catch (ResponseException | DataAccessException | SQLException e) {
-            fail("Auth token insertion failed: " + e.getMessage());
         }
     }
 
@@ -415,4 +346,38 @@ class DBConfigTest {
             fail("ResponseException: " + e.getMessage());
         }
     }
+    @Test
+    @Order(12)
+    void testDeleteAllData() {
+        try {
+            // Insert test data into multiple tables
+            dbConfig.executeUpdate("INSERT INTO AuthData (authToken, username, json) VALUES (?, ?, ?)", "testToken", "testUser", "{}");
+            dbConfig.executeUpdate("INSERT INTO UserData (username, email, password, json) VALUES (?, ?, ?, ?)", "testUser", "test@example.com", "password123", "{}");
+            dbConfig.executeUpdate("INSERT INTO GameData (whiteUsername, blackUsername, gameID, gameName, game) VALUES (?, ?, ?, ?, ?)", "player1", "player2", 2, "Test Game", "Game data");
+
+            // Call your function to delete all data
+            dbConfig.deleteAllData(); // Ensure this function exists in DBConfig
+
+            // Verify tables are empty
+            try (Connection conn = DatabaseManager.getConnection()) {
+                assertTrue(isTableEmpty(conn, "AuthData"), "AuthData should be empty after deletion");
+                assertTrue(isTableEmpty(conn, "UserData"), "UserData should be empty after deletion");
+                assertTrue(isTableEmpty(conn, "GameData"), "GameData should be empty after deletion");
+            }
+        } catch (ResponseException | DataAccessException | SQLException e) {
+            fail("Delete all data test failed: " + e.getMessage());
+        }
+    }
+
+    // Helper method to check if a table is empty
+    private boolean isTableEmpty(Connection conn, String tableName) throws SQLException {
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName)) {
+            if (rs.next()) {
+                return rs.getInt(1) == 0;
+            }
+        }
+        return false;
+    }
+
 }

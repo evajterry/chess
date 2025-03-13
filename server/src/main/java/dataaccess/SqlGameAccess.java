@@ -26,20 +26,17 @@ public class SqlGameAccess implements GameDAO {
     public void deleteAllData() throws ResponseException {
         var statement = "TRUNCATE GameData";
         configuration.executeUpdate(statement);
-        idList.clear(); //idk if i still need this - maybe
     }
 
     public String createNewGame(String authToken, String gameName) throws ResponseException {
         // GameData(String whiteUsername, String blackUsername, int gameID, String gameName, ChessGame game)
         if (isValidLogIn(authToken)) {
             int gameID = generateNewID();
-
-            GameData newGame = new GameData(null, null, gameID, gameName, new ChessGame());
+//            ChessGame newChessGame = new ChessGame();
             String jsonGameState = new Gson().toJson(new ChessGame()); // this is 아마 안 맞다
-            var statement = "INSERT INTO GameData (whiteUsername, blackUsername, gameID, gameName, newGame) VALUES (?, ?, ?, ?, ?)";
-
-            var id = configuration.executeUpdate(statement, null, null, gameID, gameName, jsonGameState);
-
+//            GameData newGame = new GameData(null, null, gameID, gameName, newChessGame);
+            String statement = "INSERT INTO GameData (whiteUsername, blackUsername, gameID, gameName, game) VALUES (?, ?, ?, ?, ?)";
+            configuration.executeUpdate(statement, null, null, gameID, gameName, jsonGameState);
             return String.valueOf(gameID);
         } else {
             return "Error: unauthorized";
@@ -66,7 +63,7 @@ public class SqlGameAccess implements GameDAO {
                 gamesList.add(gameMap);
             }
         } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new ResponseException(500, "error retrieving games ");
         }
         return gamesList;
     }
@@ -141,15 +138,14 @@ public class SqlGameAccess implements GameDAO {
              var ps = conn.prepareStatement(query)) {
             ps.setInt(1, gameID);
             try (var rs = ps.executeQuery()) {
-                // GameData(String whiteUsername, String blackUsername, int gameID, String gameName, ChessGame game) {
                 if (rs.next()) {
-                    int id = rs.getInt("gameID");
                     String whiteUsername = rs.getString("whiteUsername");
                     String blackUsername = rs.getString("blackUsername");
                     String gameName = rs.getString("gameName");
                     String gameDataString = rs.getString("game");
                     ChessGame game = deserializeGame(gameDataString); // need to make this type ChessGame
-                    return new GameData(whiteUsername, blackUsername, id, gameName, game);
+                    return new GameData(whiteUsername, blackUsername, gameID, gameName, game);
+                    // GameData(String whiteUsername, String blackUsername, int gameID, String gameName, ChessGame game) {
                 } else {
                     return null;
                 }
