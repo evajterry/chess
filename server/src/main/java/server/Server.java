@@ -23,9 +23,7 @@ public class Server {
     private final DBConfig configuration;
 
     public Server() throws ResponseException, DataAccessException {
-//        SqlUserAccess sqlUserAccess = null;
-//        SqlAuthAccess sqlAuthAccess = null;
-//        SqlGameAccess sqlGameAccess = null;
+
         UserAccess userAccess = new UserAccess();  // Create UserAccess instance
         GameAccess gameAccess = new GameAccess(userAccess);
 

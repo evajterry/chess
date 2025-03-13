@@ -8,17 +8,8 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 public class DBConfig {
-    public void configureDatabase() throws ResponseException, DataAccessException {
+    public void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
-//        try (var conn = DatabaseManager.getConnection()) {
-//            for (var statement : createStatements) {
-//                try (var preparedStatement = conn.prepareStatement(statement)) {
-//                    preparedStatement.executeUpdate();
-//                }
-//            }
-//        } catch (SQLException ex) {
-//            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-//        }
     }
 
     public void deleteAllData() throws DataAccessException, ResponseException {
@@ -55,8 +46,9 @@ public class DBConfig {
                 var rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
+                } else {
+                    return 0;
                 }
-                return 0;
             }
         } catch (SQLException e) {
             throw new ResponseException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));
