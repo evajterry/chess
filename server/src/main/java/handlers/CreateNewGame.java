@@ -9,12 +9,10 @@ import service.*;
 
 public class CreateNewGame {
     private final GameService gameService;
-    private final AuthService authService;
     private final Gson gson = new Gson();
 
     public CreateNewGame(GameService gameService, AuthService authService) {
         this.gameService = gameService;
-        this.authService = authService;
     }
 
     public Object handle(Request req, Response res) throws ResponseException {

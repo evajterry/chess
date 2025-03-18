@@ -4,6 +4,14 @@
 
     <artifactId>shared</artifactId>
     <version>1.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>edu.byu.cs240</groupId>
+            <artifactId>server</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <parent>
         <artifactId>chess</artifactId>
