@@ -3,11 +3,11 @@ package client;
 import com.sun.nio.sctp.NotificationHandler;
 import handlers.exception.ResponseException;
 import model.UserData;
+import com.google.gson.Gson;
 
 import java.util.Arrays;
 
 public class ChessClient {
-    private String gameName = null;
     private String username = null;
     private String email = null;
     private String password = null;
@@ -16,8 +16,6 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
-    // I deleted notification handler out of here
-
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -71,9 +69,10 @@ public class ChessClient {
                 - logout
                 - create-game <gamename>
                 - list-games
-                - play-game <gamename> <teamcolor>
+                - play-game <gamename> [WHITE|BLACK]
                 - observe-game <gameNumber>
                 - quit
+                - help
                 """;
     }
 
@@ -82,11 +81,12 @@ public class ChessClient {
             state = State.SIGNEDIN;
             username = params[0];
             password = params[1];
-            // how should I get type UserData from visitor name?
 //            server.login(new UserData("sample username", "email", "pass")); // I should be passing in UserData to login right?
+            UserData user = new UserData(username, null, password);
+            server.login(user);
             return String.format("You signed in as %s with password %s", username, password); // should I connect this to the api?
         }
-        throw new ResponseException(400, "Expected: <yourname>");
+        throw new ResponseException(400, "Expected: <username> <password>");
     }
 
     public String playGame(String[] params) throws ResponseException {
@@ -126,7 +126,9 @@ public class ChessClient {
             username = params[0];
             email = params[1];  // Second element is the email
             password = params[2];
-//        server.register(new UserData("sampleUser", "sampleEmail", "samplePath"));
+
+            UserData userData = new UserData(username, email, password);
+            server.register(userData);
             return String.format("You an account under the username %s.", username);
         }
         throw new ResponseException(400, "Expected: <username> <email> <password>");
@@ -135,12 +137,13 @@ public class ChessClient {
 
     public String logout() throws ResponseException {
         state = State.SIGNEDOUT;
+        server.logout();
         return String.format("you signed out");
     }
 
     public String createGame(String... params) throws ResponseException {
         if (params.length >= 1) {
-            gameName = String.join(" ", params);
+            String gameName = String.join(" ", params);
             return String.format("Game created under the name %s.", gameName);
         } else {
             throw new ResponseException(400, "Expected: <gameName>");
