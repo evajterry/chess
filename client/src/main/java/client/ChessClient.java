@@ -8,6 +8,10 @@ import java.util.Arrays;
 
 public class ChessClient {
     private String visitorName = null;
+    private String gameName = null;
+    private String username = null;
+    private String email = null;
+    private String password = null;
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
@@ -24,8 +28,8 @@ public class ChessClient {
         return """
                 - help
                 - quit
-                - login
-                - register
+                - login (enter username and password separated by a space)
+                - register (enter username, email and password separated by spaces)
                 """;
     }
 
@@ -33,39 +37,38 @@ public class ChessClient {
         var tokens = input.toLowerCase().split(" ");
         var cmd = (tokens.length > 0) ? tokens[0] : "help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return switch (cmd) {
-//                case "help" -> help();
-//                case "quit" -> quit();
+        if (state == State.SIGNEDOUT) {
+            return switch (cmd) {
+                case "quit" -> quit();
                 case "login" -> login(params);
                 case "register" -> register(params);
-            default -> help();
-        };
+                default -> help();
+            };
+        } else { // (state == State.SIGNEDIN)
+            return switch (cmd) {
+                case "logout" -> logout();
+                case "quit" -> quit();
+                case "create-game" -> createGame(params);
+                case "list-games" -> listGames();
+                default -> help();
+            };
+        }
     }
-
-//    private String register() throws ResponseException {
-//        if (params.length >= 1) {
-//            state = State.SIGNEDIN;
-//            visitorName = String.join("-", params);
-//            return String.format("You signed in as %s.", visitorName); // should I connect this to the api?
-//        }
-//        throw new ResponseException(400, "Expected: <yourname>");
-//
-//    }
 
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - signIn <yourname>
+                    - login <yourname>
                     - quit
                     """;
         }
         // Logout, create game, list games, play game, observe game
         return """
-                - log out
-                - create game
-                - list games
-                - play game
-                - observe game
+                - logout
+                - create-game <gamename>
+                - list-games
+                - play-game <gamename> <teamcolor>
+                - observe-game
                 - quit
                 """;
     }
@@ -73,18 +76,53 @@ public class ChessClient {
     public String login(String... params) throws ResponseException {
         if (params.length >= 1) {
             state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
+            username = params[0];
+            password = params[1];
             // how should I get type UserData from visitor name?
-            server.login(new UserData("sample username", "email", "pass")); // I should be passing in UserData to login right?
-            return String.format("You signed in as %s.", visitorName); // should I connect this to the api?
+//            server.login(new UserData("sample username", "email", "pass")); // I should be passing in UserData to login right?
+            return String.format("You signed in as %s with password %s", username, password); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <yourname>");
     }
 
-    public String register(String... params) throws ResponseException {
-        state = State.SIGNEDIN;
-        server.register(new UserData("sampleUser", "sampleEmail", "samplePath"));
-        return String.format("You an account under the username %s.", visitorName);
+    public String listGames() {
+        // call to the api
+        // api returns list of games
+//        return String.format("Games: \n ", )
+        return "Game list: ";
     }
 
+    public String quit() throws ResponseException {
+        state = State.SIGNEDOUT;
+        System.out.println("Goodbye!");
+        System.exit(0);
+        return "";
+    }
+
+    public String register(String... params) throws ResponseException {
+        if (params.length >= 3) {
+            state = State.SIGNEDIN;
+            username = params[0];
+            email = params[1];  // Second element is the email
+            password = params[2];
+//        server.register(new UserData("sampleUser", "sampleEmail", "samplePath"));
+            return String.format("You an account under the username %s.", username);
+        }
+        throw new ResponseException(400, "Expected: <username> <email> <password>");
+                //public record UserData(String username, String email, String password) {
+    }
+
+    public String logout() throws ResponseException {
+        state = State.SIGNEDOUT;
+        return String.format("you signed out");
+    }
+
+    public String createGame(String... params) throws ResponseException {
+        if (params.length >= 1) {
+            gameName = String.join(" ", params);
+            return String.format("Game created under the name %s.", gameName);
+        } else {
+            throw new ResponseException(400, "Expected: <gameName>");
+        }
+    }
 }
