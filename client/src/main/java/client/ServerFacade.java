@@ -3,6 +3,7 @@ package client;
 import com.google.gson.Gson;
 import handlers.exception.ResponseException;
 import model.GameData;
+import model.UserData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +25,16 @@ public class ServerFacade {
         return this.makeRequest("POST", path, game, GameData.class);
     } // I believe this is wrong
 
+    public UserData login(UserData user) throws ResponseException {
+        var path = "/session";
+        return this.makeRequest("POST", path, user, UserData.class);
+    }
+
+    public UserData register(UserData user) throws ResponseException {
+        var path = "/user";
+        return this.makeRequest("POST", path, user, UserData.class);
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
@@ -31,7 +42,7 @@ public class ServerFacade {
             http.setRequestMethod(method);
             http.setDoOutput(true);
 
-            writeBody(request, http);
+            writeBody(request, http); // failing here
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
@@ -47,7 +58,7 @@ public class ServerFacade {
             http.addRequestProperty("Content-Type", "application/json");
             String reqData = new Gson().toJson(request);
             try (OutputStream reqBody = http.getOutputStream()) {
-                reqBody.write(reqData.getBytes());
+                reqBody.write(reqData.getBytes()); // failing here
             }
         }
     }

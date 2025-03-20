@@ -5,12 +5,13 @@ import com.sun.nio.sctp.NotificationHandler;
 import java.util.Scanner;
 
 import static client.EscapeSequences.*;
+import com.sun.nio.sctp.NotificationHandler;
 
 public class Repl {
     private final ChessClient client;
 
     public Repl(String serverUrl) {
-        client = new ChessClient(serverUrl, (NotificationHandler) this); // idk if i should have notificationHandler here
+        client = new ChessClient(serverUrl); // idk if i should have notificationHandler here
     }
 
     public void run() {
