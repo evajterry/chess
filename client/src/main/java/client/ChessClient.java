@@ -7,11 +7,12 @@ import model.UserData;
 import java.util.Arrays;
 
 public class ChessClient {
-    private String visitorName = null;
     private String gameName = null;
     private String username = null;
     private String email = null;
     private String password = null;
+    private String desiredTeam = null;
+    private String gameNumber = null;
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
@@ -50,6 +51,8 @@ public class ChessClient {
                 case "quit" -> quit();
                 case "create-game" -> createGame(params);
                 case "list-games" -> listGames();
+                case "play-game" -> playGame(params);
+                case "observe-game" -> observeGame(params);
                 default -> help();
             };
         }
@@ -58,7 +61,8 @@ public class ChessClient {
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - login <yourname>
+                    - login <yourname> <password>
+                    - register <yourname> <email> <password>
                     - quit
                     """;
         }
@@ -68,13 +72,13 @@ public class ChessClient {
                 - create-game <gamename>
                 - list-games
                 - play-game <gamename> <teamcolor>
-                - observe-game
+                - observe-game <gameNumber>
                 - quit
                 """;
     }
 
     public String login(String... params) throws ResponseException {
-        if (params.length >= 1) {
+        if (params.length >= 2) {
             state = State.SIGNEDIN;
             username = params[0];
             password = params[1];
@@ -83,6 +87,23 @@ public class ChessClient {
             return String.format("You signed in as %s with password %s", username, password); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <yourname>");
+    }
+
+    public String playGame(String[] params) throws ResponseException {
+        if (params.length >= 2) {
+            gameNumber = params[0];
+            desiredTeam = params[1];
+            return String.format("You joined game %s as %s", gameNumber, desiredTeam); // should I connect this to the api?
+        }
+        throw new ResponseException(400, "Expected: <gameNumber> <desiredTeam>");
+    }
+
+    public String observeGame(String[] params) throws ResponseException {
+        if (params.length >= 1) {
+            gameNumber = params[0];
+            return String.format("You joined game %s as an observer", gameNumber); // should I connect this to the api?
+        }
+        throw new ResponseException(400, "Expected: <gameNumber>");
     }
 
     public String listGames() {
