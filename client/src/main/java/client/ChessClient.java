@@ -2,10 +2,13 @@ package client;
 
 import com.sun.nio.sctp.NotificationHandler;
 import handlers.exception.ResponseException;
+import model.AuthData;
+import model.GameData;
 import model.UserData;
 import com.google.gson.Gson;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ChessClient {
     private String username = null;
@@ -13,6 +16,7 @@ public class ChessClient {
     private String password = null;
     private String desiredTeam = null;
     private String gameNumber = null;
+    private String authToken = null;
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
@@ -39,14 +43,14 @@ public class ChessClient {
         if (state == State.SIGNEDOUT) {
             return switch (cmd) {
                 case "quit" -> quit();
-                case "login" -> login(params);
-                case "register" -> register(params);
+                case "login" -> login(params); // good
+                case "register" -> register(params); // good
                 default -> help();
             };
         } else { // (state == State.SIGNEDIN)
             return switch (cmd) {
                 case "logout" -> logout();
-                case "quit" -> quit();
+                case "quit" -> quit(); // good
                 case "create-game" -> createGame(params);
                 case "list-games" -> listGames();
                 case "play-game" -> playGame(params);
@@ -83,7 +87,8 @@ public class ChessClient {
             password = params[1];
 //            server.login(new UserData("sample username", "email", "pass")); // I should be passing in UserData to login right?
             UserData user = new UserData(username, null, password);
-            server.login(user);
+            AuthData authData = server.login(user);
+            authToken = authData.authToken();
             return String.format("You signed in as %s with password %s", username, password); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <username> <password>");
@@ -93,6 +98,7 @@ public class ChessClient {
         if (params.length >= 2) {
             gameNumber = params[0];
             desiredTeam = params[1];
+            server.joinGame(gameNumber, desiredTeam);
             return String.format("You joined game %s as %s", gameNumber, desiredTeam); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <gameNumber> <desiredTeam>");
@@ -128,7 +134,8 @@ public class ChessClient {
             password = params[2];
 
             UserData userData = new UserData(username, email, password);
-            server.register(userData);
+            AuthData authData = server.register(userData);
+            authToken = authData.authToken();
             return String.format("You an account under the username %s.", username);
         }
         throw new ResponseException(400, "Expected: <username> <email> <password>");
@@ -137,13 +144,16 @@ public class ChessClient {
 
     public String logout() throws ResponseException {
         state = State.SIGNEDOUT;
-        server.logout();
+
+        server.logout(authToken); // I NEED THE AUTHTOKEN
+
         return String.format("you signed out");
     }
 
     public String createGame(String... params) throws ResponseException {
         if (params.length >= 1) {
             String gameName = String.join(" ", params);
+            server.createNewGame(gameName);
             return String.format("Game created under the name %s.", gameName);
         } else {
             throw new ResponseException(400, "Expected: <gameName>");
