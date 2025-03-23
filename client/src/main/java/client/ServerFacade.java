@@ -63,12 +63,10 @@ public class ServerFacade {
 
     public List<Map<String, Object>> listGames() throws ResponseException {
         var path = "/game"; // GET
-        String jsonResponse = this.makeRequest("GET", path, null, String.class);
-        System.out.println("Response: " + jsonResponse);
-        JsonObject responseObject = new Gson().fromJson(jsonResponse, JsonObject.class);
+        JsonObject responseObject = this.makeRequest("GET", path, null, JsonObject.class); // Expect JSON
+        System.out.println("Response: " + responseObject);
         JsonArray gamesArray = responseObject.getAsJsonArray("games");
         return new Gson().fromJson(gamesArray, new TypeToken<List<Map<String, Object>>>(){}.getType());
-//        return this.makeRequest("GET", path, null, List.class);
     }
 
     public void logout(String authToken) throws ResponseException {
