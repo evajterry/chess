@@ -67,7 +67,8 @@ public class SqlGameAccess implements GameDAO {
         return gamesList;
     }
 
-        public boolean joinNewGame(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+    public boolean joinNewGame(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+        try {
             if (!sqlAuthAccess.userLoggedIn(authToken)) {
                 throw new ResponseException(401, "Error: unauthorized");
             }
@@ -81,28 +82,83 @@ public class SqlGameAccess implements GameDAO {
                 return false;
             }
             GameData updatedGame = targetGame;
-            if (Objects.equals(requestedTeam, "white")) {
-                if (targetGame.whiteUsername() == null) {
-                    updatedGame = updatedGame.updateWhiteUsername(username);
-                } else {
-                    throw new ResponseException(400, "Error: White team already taken");
+            switch (requestedTeam) {
+                case "white" -> {
+                    if (targetGame.whiteUsername() == null) {
+                        updatedGame = updatedGame.updateWhiteUsername(username);
+                    } else {
+                        throw new ResponseException(400, "Error: White team already taken");
+                    }
                 }
-            } else if (Objects.equals(requestedTeam, "black")) {
-                if (targetGame.blackUsername() == null) {
-                    updatedGame = updatedGame.updateBlackUsername(username);
-                } else {
-                    throw new ResponseException(400, "Error: Black team already taken");
+                case "black" -> {
+                    if (targetGame.blackUsername() == null) {
+                        updatedGame = updatedGame.updateBlackUsername(username);
+                    } else {
+                        throw new ResponseException(400, "Error: Black team already taken");
+                    }
                 }
-            } else if (Objects.equals(requestedTeam, "white/black")) {
-                if (targetGame.whiteUsername() == null) {
-                    updatedGame = updatedGame.updateWhiteUsername(username);
-                } else if (targetGame.blackUsername() == null) {
-                    updatedGame = updatedGame.updateBlackUsername(username);
-                } else {
-                    throw new ResponseException(400, "Error: both teams are already taken");
+                case "white/black" -> {
+                    if (targetGame.whiteUsername() == null) {
+                        updatedGame = updatedGame.updateWhiteUsername(username);
+                    } else if (targetGame.blackUsername() == null) {
+                        updatedGame = updatedGame.updateBlackUsername(username);
+                    } else {
+                        throw new ResponseException(400, "Error: both teams are already taken");
+                    }
                 }
-            } else {
-                throw new ResponseException(400, "Error: invalid team request");
+                case null, default -> throw new ResponseException(400, "Error: invalid team request");
+            }
+            return updateGameInDatabase(updatedGame);
+        } catch (ResponseException e) {
+            // Log the exception message before re-throwing
+            System.out.println("Caught ResponseException: " + e.getMessage());
+            throw e;  // Re-throw to propagate the error
+        }
+    }
+
+
+    public boolean joinNewGame2(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+            if (!sqlAuthAccess.userLoggedIn(authToken)) {
+                throw new ResponseException(401, "Error: unauthorized");
+            }
+            String username = getUsername(authToken);
+            if (!checkGameIDExists(gameID)) {
+                throw new ResponseException(404, "Error: game not found");
+            }
+            GameData targetGame = getGameData(gameID);
+
+            if (isTeamReqTaken(targetGame, requestedTeam)) {
+                return false;
+            }
+            GameData updatedGame = targetGame;
+            switch (requestedTeam) {
+                case "white" -> {
+                    System.out.println("on line 86");
+                    if (targetGame.whiteUsername() == null) {
+                        updatedGame = updatedGame.updateWhiteUsername(username);
+                        System.out.println("on line 89, game is updated to include white user");
+                    } else {
+                        System.out.println("about to throw an exception");
+                        throw new ResponseException(400, "Error: White team already taken");
+                    }
+                }
+                case "black" -> {
+                    if (targetGame.blackUsername() == null) {
+                        updatedGame = updatedGame.updateBlackUsername(username);
+                    } else {
+                        throw new ResponseException(400, "Error: Black team already taken");
+                    }
+                }
+                case "white/black" -> {
+                    if (targetGame.whiteUsername() == null) {
+                        updatedGame = updatedGame.updateWhiteUsername(username);
+                    } else if (targetGame.blackUsername() == null) {
+                        updatedGame = updatedGame.updateBlackUsername(username);
+                    } else {
+                        throw new ResponseException(400, "Error: both teams are already taken");
+                    }
+                }
+                case null, default -> throw new ResponseException(400, "Error: invalid team request");
             }
         return updateGameInDatabase(updatedGame);
     }

@@ -3,6 +3,9 @@ package client;
 import client.APIClients.CreateGameRequest;
 import client.APIClients.JoinGameRequest;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import handlers.exception.ResponseException;
 import model.AuthData;
 import model.GameData;
@@ -12,9 +15,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -41,14 +47,28 @@ public class ServerFacade {
 
     public AuthData register(UserData user) throws ResponseException {
         var path = "/user";
-        return this.makeRequest("POST", path, user, AuthData.class);
+        AuthData authData = this.makeRequest("POST", path, user, AuthData.class);
+        authToken = authData.authToken();
+        return authData;
     }
 
     public JoinGameRequest joinGame(String playerColor, String gameID) throws ResponseException {
         var path = "/game";
         int intGameID = Integer.parseInt(gameID);
+        System.out.println("Joining game with team: " + playerColor + " and ID: " + gameID);
         JoinGameRequest requestBody = new JoinGameRequest(intGameID, playerColor);
+        System.out.println("Sending request: " + new Gson().toJson(requestBody));
         return this.makeRequest("PUT", path, requestBody, JoinGameRequest.class); // null value
+    }
+
+    public List<Map<String, Object>> listGames() throws ResponseException {
+        var path = "/game"; // GET
+        String jsonResponse = this.makeRequest("GET", path, null, String.class);
+        System.out.println("Response: " + jsonResponse);
+        JsonObject responseObject = new Gson().fromJson(jsonResponse, JsonObject.class);
+        JsonArray gamesArray = responseObject.getAsJsonArray("games");
+        return new Gson().fromJson(gamesArray, new TypeToken<List<Map<String, Object>>>(){}.getType());
+//        return this.makeRequest("GET", path, null, List.class);
     }
 
     public void logout(String authToken) throws ResponseException {

@@ -7,6 +7,8 @@ import model.GameData;
 import model.UserData;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class ChessClient {
@@ -93,7 +95,7 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: <username> <password>");
     }
 
-    public String playGame(String[] params) throws ResponseException {
+    public String playGame(String[] params) throws ResponseException { // figure out issues
         if (params.length >= 2) {
             gameNumber = params[0];
             desiredTeam = params[1];
@@ -112,9 +114,10 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: <gameNumber>");
     }
 
-    public String listGames() {
+    public String listGames() throws ResponseException {
         // not implemented yet
-        return "Game list: ";
+        List<Map<String, Object>> gamesList = server.listGames();
+        return "Game list: " + gamesList;
     }
 
     public String quit() throws ResponseException {
@@ -134,7 +137,7 @@ public class ChessClient {
             UserData userData = new UserData(username, email, password);
             AuthData authData = server.register(userData);
             authToken = authData.authToken();
-            return String.format("You an account under the username %s.", username);
+            return String.format("You are now registered and logged in as %s.", username);
         }
         throw new ResponseException(400, "Expected: <username> <email> <password>");
                 //public record UserData(String username, String email, String password) {
@@ -143,7 +146,7 @@ public class ChessClient {
     public String logout() throws ResponseException {
         state = State.SIGNEDOUT;
 
-        server.logout(authToken); // I NEED THE AUTHTOKEN
+        server.logout(authToken);
 
         return String.format("you signed out");
     }
