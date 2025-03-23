@@ -55,10 +55,12 @@ public class GameService {
         }
         if (reqTeam == null) {
             throw new ResponseException(400, "Error: need requested team color");
-        } if (!acceptedTeamColor(reqTeam)) {
+        }
+        if (!acceptedTeamColor(reqTeam)) {
             throw new ResponseException(400, "Error: bad team color request");
         }else {
             System.out.print(authToken + "\n" + gameID + "\n" + reqTeam);
+
             if (!sqlGameAccess.joinNewGame(authToken, gameID, reqTeam)) {
                 throw new ResponseException(403, "Error: already taken");
             }
@@ -67,7 +69,7 @@ public class GameService {
     }
 
     private boolean acceptedTeamColor(String reqTeam) {
-        return Objects.equals(reqTeam, "WHITE") || Objects.equals(reqTeam, "BLACK") || Objects.equals(reqTeam, "WHITE/BLACK");
+        return Objects.equals(reqTeam, "white") || Objects.equals(reqTeam, "black") || Objects.equals(reqTeam, "WHITE/BLACK");
     }
 
     private boolean isValidGameIDRequest(int gameID) {

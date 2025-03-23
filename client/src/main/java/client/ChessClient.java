@@ -5,7 +5,6 @@ import handlers.exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import com.google.gson.Gson;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -53,7 +52,7 @@ public class ChessClient {
                 case "quit" -> quit(); // good
                 case "create-game" -> createGame(params);
                 case "list-games" -> listGames();
-                case "play-game" -> playGame(params);
+                case "join-game" -> playGame(params);
                 case "observe-game" -> observeGame(params);
                 default -> help();
             };
@@ -73,7 +72,7 @@ public class ChessClient {
                 - logout
                 - create-game <gamename>
                 - list-games
-                - play-game <gamename> [WHITE|BLACK]
+                - join-game <gameID> [WHITE|BLACK]
                 - observe-game <gameNumber>
                 - quit
                 - help
@@ -98,10 +97,11 @@ public class ChessClient {
         if (params.length >= 2) {
             gameNumber = params[0];
             desiredTeam = params[1];
-            server.joinGame(gameNumber, desiredTeam);
+            server.joinGame(desiredTeam, gameNumber);
+            ui.ChessBoard.chessBoard();
             return String.format("You joined game %s as %s", gameNumber, desiredTeam); // should I connect this to the api?
         }
-        throw new ResponseException(400, "Expected: <gameNumber> <desiredTeam>");
+        throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
     }
 
     public String observeGame(String[] params) throws ResponseException {
@@ -113,9 +113,7 @@ public class ChessClient {
     }
 
     public String listGames() {
-        // call to the api
-        // api returns list of games
-//        return String.format("Games: \n ", )
+        // not implemented yet
         return "Game list: ";
     }
 

@@ -1,7 +1,7 @@
 package client;
 
 import client.APIClients.CreateGameRequest;
-import client.APIClients.JoinGameResponse;
+import client.APIClients.JoinGameRequest;
 import com.google.gson.Gson;
 import handlers.exception.ResponseException;
 import model.AuthData;
@@ -15,9 +15,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -47,14 +44,12 @@ public class ServerFacade {
         return this.makeRequest("POST", path, user, AuthData.class);
     }
 
-    public JoinGameResponse joinGame(String gameID, String playerColor) throws ResponseException {
+    public JoinGameRequest joinGame(String playerColor, String gameID) throws ResponseException {
         var path = "/game";
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("playerColor", playerColor);
-        requestBody.put("gameID", gameID);
-        return this.makeRequest("PUT", path, requestBody, JoinGameResponse.class); // null value
+        int intGameID = Integer.parseInt(gameID);
+        JoinGameRequest requestBody = new JoinGameRequest(intGameID, playerColor);
+        return this.makeRequest("PUT", path, requestBody, JoinGameRequest.class); // null value
     }
-
 
     public void logout(String authToken) throws ResponseException {
         var path = "/session";
@@ -73,6 +68,8 @@ public class ServerFacade {
                 http.setRequestProperty("Authorization", authToken);
                 System.out.println("Set request property: " + authToken);
             }
+            System.out.print("AuthToken: ");
+            System.out.println(authToken);
 
             writeBody(request, http);
             http.connect();
@@ -120,10 +117,9 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-                    throw ResponseException.fromJson(respErr);
+                    throw ResponseException.fromJson(respErr, status);
                 }
             }
-
             throw new ResponseException(status, "other failure: " + status);
         }
     }

@@ -81,19 +81,19 @@ public class SqlGameAccess implements GameDAO {
                 return false;
             }
             GameData updatedGame = targetGame;
-            if (Objects.equals(requestedTeam, "WHITE")) {
+            if (Objects.equals(requestedTeam, "white")) {
                 if (targetGame.whiteUsername() == null) {
                     updatedGame = updatedGame.updateWhiteUsername(username);
                 } else {
                     throw new ResponseException(400, "Error: White team already taken");
                 }
-            } else if (Objects.equals(requestedTeam, "BLACK")) {
+            } else if (Objects.equals(requestedTeam, "black")) {
                 if (targetGame.blackUsername() == null) {
                     updatedGame = updatedGame.updateBlackUsername(username);
                 } else {
                     throw new ResponseException(400, "Error: Black team already taken");
                 }
-            } else if (Objects.equals(requestedTeam, "WHITE/BLACK")) {
+            } else if (Objects.equals(requestedTeam, "white/black")) {
                 if (targetGame.whiteUsername() == null) {
                     updatedGame = updatedGame.updateWhiteUsername(username);
                 } else if (targetGame.blackUsername() == null) {

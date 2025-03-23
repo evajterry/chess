@@ -16,7 +16,7 @@ public class ChessBoard {
     // Padded characters.
     private static final String EMPTY = "  ";
 
-    public static void main(String[] args) {
+    public static void chessBoard() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         out.print(ERASE_SCREEN);
