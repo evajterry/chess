@@ -50,11 +50,11 @@ public class ChessClient {
             };
         } else { // (state == State.SIGNEDIN)
             return switch (cmd) {
-                case "logout" -> logout();
+                case "logout" -> logout(); // good
                 case "quit" -> quit(); // good
-                case "create-game" -> createGame(params);
-                case "list-games" -> listGames();
-                case "join-game" -> playGame(params);
+                case "create-game" -> createGame(params); // good
+                case "list-games" -> listGames(); // good
+                case "join-game" -> playGame(params); // almost
                 case "observe-game" -> observeGame(params);
                 default -> help();
             };
@@ -109,6 +109,7 @@ public class ChessClient {
     public String observeGame(String[] params) throws ResponseException {
         if (params.length >= 1) {
             gameNumber = params[0];
+            server.observeGame(gameNumber);
             return String.format("You joined game %s as an observer", gameNumber); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <gameNumber>");

@@ -61,6 +61,12 @@ public class ServerFacade {
         return this.makeRequest("PUT", path, requestBody, JoinGameRequest.class); // null value
     }
 
+    public void observeGame(String gameID) throws ResponseException {
+        // figure out a way to observe the specific game
+        // figure out how to read in
+        ui.ChessBoard.chessBoard();
+    }
+
     public List<Map<String, Object>> listGames() throws ResponseException {
         var path = "/game"; // GET
         JsonObject responseObject = this.makeRequest("GET", path, null, JsonObject.class); // Expect JSON
