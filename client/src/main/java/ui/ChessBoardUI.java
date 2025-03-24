@@ -1,29 +1,35 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessPiece;
+import chess.ChessPosition;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
+import static chess.ChessBoard.getPieceSymbol;
 import static ui.EscapeSequences.*;
 
-public class ChessBoard {
+public class ChessBoardUI {
     // Board dimensions.
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
     private static final int HEADER_SPACING = 2; // Adjust as needed
+    private static final ChessBoard board = new ChessBoard();
 
     // Padded characters.
     private static final String EMPTY = "  ";
 
     public static void chessBoard() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        board.resetBoard();
 
         out.print(ERASE_SCREEN);
 
         drawHeaders(out);
 
-        drawChessBoard(out);
+        drawChessBoard(out, board);
 
         drawHeaders(out);
 
@@ -64,10 +70,10 @@ public class ChessBoard {
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out) {
+    private static void drawChessBoard(PrintStream out, ChessBoard chessBoard) {
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
-            drawRowOfSquares(out, boardRow);
+            drawRowOfSquares(out, boardRow, chessBoard);
 
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                 setBlack(out);
@@ -86,9 +92,7 @@ public class ChessBoard {
             {"♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"}
     };
 
-
-
-    private static void drawRowOfSquares(PrintStream out, int row) {
+    private static void drawRowOfSquares(PrintStream out, int row, ChessBoard chessBoard) {
 
         for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
@@ -100,7 +104,9 @@ public class ChessBoard {
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 setSquareColor(out, row, col);
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    out.print("  " + PIECES[row][col] + "  ");
+                    ChessPiece piece = chessBoard.getPiece(new ChessPosition(row + 1, col + 1));
+                    String pieceSymbol = (piece != null) ? getPieceSymbol(piece) : " ";
+                    out.print("  " + pieceSymbol + "  ");
                 } else {
                     out.print("     "); // Empty space
                 }

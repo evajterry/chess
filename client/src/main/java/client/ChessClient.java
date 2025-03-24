@@ -100,7 +100,7 @@ public class ChessClient {
             gameNumber = params[0];
             desiredTeam = params[1];
             server.joinGame(desiredTeam, gameNumber);
-            ui.ChessBoard.chessBoard();
+            ui.ChessBoardUI.chessBoard();
             return String.format("You joined game %s as %s", gameNumber, desiredTeam); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");

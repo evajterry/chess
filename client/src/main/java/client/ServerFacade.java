@@ -64,7 +64,7 @@ public class ServerFacade {
     public void observeGame(String gameID) throws ResponseException {
         // figure out a way to observe the specific game
         // figure out how to read in
-        ui.ChessBoard.chessBoard();
+        ui.ChessBoardUI.chessBoard();
     }
 
     public List<Map<String, Object>> listGames() throws ResponseException {

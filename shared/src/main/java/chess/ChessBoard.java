@@ -3,6 +3,8 @@ package chess;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static chess.ChessPiece.PieceType.*;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -72,11 +74,11 @@ public class ChessBoard {
             board[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
         }
         // rooks
-        board[0][0] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
-        board[0][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
+        board[0][0] = new ChessPiece(ChessGame.TeamColor.WHITE, ROOK);
+        board[0][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ROOK);
 
-        board[7][0] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
-        board[7][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
+        board[7][0] = new ChessPiece(ChessGame.TeamColor.BLACK, ROOK);
+        board[7][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ROOK);
 
         // knights
         board[0][1] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
@@ -93,12 +95,12 @@ public class ChessBoard {
         board[7][5] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
 
         // Queens
-        board[0][3] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
-        board[7][3] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
+        board[0][3] = new ChessPiece(ChessGame.TeamColor.WHITE, QUEEN);
+        board[7][3] = new ChessPiece(ChessGame.TeamColor.BLACK, QUEEN);
 
         // Kings
-        board[0][4] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
-        board[7][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+        board[0][4] = new ChessPiece(ChessGame.TeamColor.WHITE, KING);
+        board[7][4] = new ChessPiece(ChessGame.TeamColor.BLACK, KING);
     }
 
     public static void printChessBoard(ChessBoard chessBoard) {
@@ -121,7 +123,7 @@ public class ChessBoard {
      * @param piece The chess piece to convert.
      * @return The symbol representing the piece.
      */
-    public static String getPieceSymbol(ChessPiece piece) {
+    public static String getPieceCharacter(ChessPiece piece) {
         String symbol = "";
         switch (piece.getPieceType()) {
             case PAWN:
@@ -145,4 +147,16 @@ public class ChessBoard {
         }
         return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? symbol.toLowerCase() : symbol;
     }
+
+    public static String getPieceSymbol(ChessPiece piece) {
+        return switch (piece.getPieceType()) {
+            case KING -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♔" : "♚";
+            case QUEEN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♕" : "♛";
+            case ROOK -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♖" : "♜";
+            case BISHOP -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♗" : "♝";
+            case KNIGHT -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♘" : "♞";
+            case PAWN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "♙" : "♟";
+        };
+    }
+
 }
