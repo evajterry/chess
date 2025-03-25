@@ -37,13 +37,14 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(3)
     public void testLoginSuccess() throws ResponseException {
         // Register a test user first (needed before login)
         String username = "testUser";
         String email = "test@example.com";
         String password = "testPass";
 
-        client.register(username, email, password);
+//        client.register(username, email, password);
 
         // Now attempt login with the same credentials
         String response = client.login(username, password);
@@ -53,11 +54,13 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(5)
     public void sampleTest() {
         assertTrue(true);
     }
 
     @Test
+    @Order(4)
     public void testLoginMissingParameters() {
         ResponseException exception = assertThrows(ResponseException.class, () -> client.login("onlyUsername"));
 
@@ -73,6 +76,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(1)
     public void testRegisterSuccess() throws Exception {
         String username = "newUser";
         String password = "securePass123";
@@ -86,6 +90,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(2)
     public void testRegisterMissingParameters() {
         ResponseException exception = assertThrows(ResponseException.class, () -> client.register("onlyUsername"));
 
@@ -98,6 +103,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(6)
     public void testCreateGameSuccess() throws Exception {
         String gameName = "TestGame";
         client.login("testUser", "testPass");
@@ -110,6 +116,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(7)
     public void testLogoutSuccess() throws Exception {
         // Assuming that the user is already logged in with a valid token
         client.login("testUser", "testPass"); // or set the necessary pre-conditions
@@ -120,6 +127,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(8)
     public void testLogoutWithoutLogin() throws ResponseException {
         ResponseException exception = assertThrows(ResponseException.class, () -> client.logout());
 
@@ -129,6 +137,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(9)
     public void testListGames() throws ResponseException {
         client.login("testUser", "testPass");
         client.createGame("gameName1");
@@ -160,6 +169,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(10)
     public void testCreateGameMissingParameters() throws ResponseException {
         client.login("testUser", "testPass");
 
@@ -173,6 +183,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(11)
     public void testJoinGameSuccess() throws ResponseException {
         client.login("testUser", "testPass");
 
@@ -184,6 +195,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(12)
     void testObserveGameSuccess() throws ResponseException {
         String[] params = {"1"};
 
@@ -191,6 +203,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(13)
     void testObserveGameWithoutGameNumber() {
         String[] params = {};
         Exception exception = assertThrows(ResponseException.class, () -> {
@@ -202,13 +215,16 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(14)
     void testJoinGameWithInvalidGameID() throws ResponseException {
+        String[] params = {"testUser", "fancyEmail", "testPass"};
+        client.register(params);
         client.login("testUser", "testPass");
 
-        String[] params = {"b", "BLACK"};
+        String[] params2 = {"b", "BLACK"};
 
         Exception exception = assertThrows(NumberFormatException.class, () -> {
-            client.playGame(params);
+            client.playGame(params2);
         });
 
         assertNotNull(exception);
