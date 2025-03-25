@@ -23,13 +23,6 @@ public class GameService {
         sqlGameAccess.deleteAllData();
     }
 
-//    public ChessBoard loadGame(String gameID) throws Exception {
-//        String json = gameRepo.getGameData(gameID);
-//        if (json == null) {
-//            throw new Exception("Game not found");
-//        }
-//        return objectMapper.readValue(json, ChessBoard.class);
-//    }
 
     public Object createNewGame(String authToken, String gameName) throws ResponseException {
         // reasons to throw errors: (1) authToken not valid (2) gameName invalid?

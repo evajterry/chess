@@ -123,30 +123,6 @@ public class ChessBoard {
      * @param piece The chess piece to convert.
      * @return The symbol representing the piece.
      */
-    public static String getPieceCharacter(ChessPiece piece) {
-        String symbol = "";
-        switch (piece.getPieceType()) {
-            case PAWN:
-                symbol = "P";
-                break;
-            case ROOK:
-                symbol = "R";
-                break;
-            case KNIGHT:
-                symbol = "N";
-                break;
-            case BISHOP:
-                symbol = "B";
-                break;
-            case QUEEN:
-                symbol = "Q";
-                break;
-            case KING:
-                symbol = "K";
-                break;
-        }
-        return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? symbol.toLowerCase() : symbol;
-    }
 
     public static String getPieceSymbol(ChessPiece piece) {
         return switch (piece.getPieceType()) {
