@@ -5,6 +5,9 @@ import handlers.exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -62,7 +65,7 @@ public class ServerFacadeTests {
         String jsonResponse = exception.toJson();
         System.out.println("Actual JSON Output: " + jsonResponse); // Debugging output
 
-        String expectedJson = "{\"message\":\"Expected: \\u003cusername\\u003e \\u003cpassword\\u003e\",\"status\":400}";
+        String expectedJson = "{\"status\":400,\"message\":\"Expected: \\u003cusername\\u003e \\u003cpassword\\u003e\"}";
         assertEquals(expectedJson, jsonResponse);
 
     }
@@ -91,6 +94,7 @@ public class ServerFacadeTests {
         assertTrue(jsonResponse.contains("\"message\":\"Expected: \\u003cusername\\u003e \\u003cemail\\u003e \\u003cpassword\\u003e"));
         assertTrue(jsonResponse.contains("\"status\":400"));
     }
+
     @Test
     public void testCreateGameSuccess() throws Exception {
         String gameName = "TestGame";
@@ -103,6 +107,67 @@ public class ServerFacadeTests {
         assertEquals(response, responseString);
     }
 
+    @Test
+    public void testLogoutSuccess() throws Exception {
+        // Assuming that the user is already logged in with a valid token
+        client.login("testUser", "testPass"); // or set the necessary pre-conditions
 
+        String response = client.logout(); // Log the user out
+
+        assertEquals("you signed out", response); // Assumes that the logout() method returns this message
+    }
+
+    @Test
+    public void testLogoutWithoutLogin() throws ResponseException {
+        ResponseException exception = assertThrows(ResponseException.class, () -> client.logout());
+
+        assertEquals("Error: not authorized", exception.getMessage());
+
+        assertEquals(401, exception.statusCode());
+    }
+
+    @Test
+    public void testListGames() throws ResponseException {
+        client.login("testUser", "testPass");
+        client.createGame("gameName1");
+        client.createGame("gameName2");
+
+        List<Map<String, Object>> gamesList = List.of(
+                Map.of("1", 1, "gameName1", "Chess Game 1"),
+                Map.of("2", 2, "gameName2", "Chess Game 2")
+        );
+
+        String result = client.listGames();  // This should return the formatted string like "Game list: [...]"
+
+        // Assert that the response contains the expected "Game list:"
+        assertTrue(result.contains("Game list:"));
+
+        // Assert that both game names are in the response
+        assertTrue(result.contains("gameName1"));
+        assertTrue(result.contains("gameName2"));
+
+        // Assert that the result contains both gameIDs and gameNames
+        assertTrue(result.contains("gameID"));
+        assertTrue(result.contains("gameName"));
+
+        // Optionally: Checking the values are formatted as expected (this depends on the exact output format of `listGames()`)
+        assertTrue(result.contains("gameID=1.0"));
+        assertTrue(result.contains("gameName=gameName1"));
+        assertTrue(result.contains("gameID=2.0"));
+        assertTrue(result.contains("gameName=gameName2"));
+    }
+
+    @Test
+    public void testCreateGameMissingParameters() throws ResponseException {
+        client.login("testUser", "testPass");
+
+        ResponseException exception = assertThrows(ResponseException.class, () -> client.createGame());
+
+        assertEquals(400, exception.statusCode());
+        assertEquals("Expected: <gameName>", exception.getMessage());
+
+        String jsonResponse = exception.toJson();
+        assertTrue(jsonResponse.contains("\"status\":400"));
+    }
 
 }

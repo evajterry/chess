@@ -164,4 +164,5 @@ public class ChessClient {
             throw new ResponseException(400, "Expected: <gameName>");
         }
     }
+
 }
