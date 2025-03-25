@@ -91,7 +91,7 @@ public class ChessClient {
             UserData user = new UserData(username, null, password);
             AuthData authData = server.login(user);
             authToken = authData.authToken();
-            return String.format("You signed in as %s with password %s", username, password); // should I connect this to the api?
+            return String.format("You signed in as %s", username); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <username> <password>");
     }
@@ -120,9 +120,21 @@ public class ChessClient {
     }
 
     public String listGames() throws ResponseException {
-        // not implemented yet
         List<Map<String, Object>> gamesList = server.listGames();
-        return "Game list: " + gamesList;
+
+        StringBuilder formatted_list = new StringBuilder("Game list:\n");
+
+        for (int i = 0; i < gamesList.size(); i++) {
+            Map<String, Object> game = gamesList.get(i);
+            Integer gameId = ((Double) game.get("gameID")).intValue();
+            String gameName = (String) game.get("gameName");
+            String blackUsername = game.containsKey("blackUsername") ? (String) game.get("blackUsername") : " ";
+            String whiteUsername = game.containsKey("whiteUsername") ? (String) game.get("whiteUsername") : " ";
+
+            formatted_list.append(String.format("%d. Game ID: %s\n   Game Name: %s\n   Black Username: %s\n   White Username: %s\n",
+                    i + 1, gameId, gameName, blackUsername, whiteUsername));
+        }
+        return formatted_list.toString();
     }
 
     public String quit() throws ResponseException {

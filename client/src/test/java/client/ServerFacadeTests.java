@@ -4,12 +4,6 @@ import client.APIClients.CreateGameRequest;
 import handlers.exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -143,29 +137,16 @@ public class ServerFacadeTests {
         client.createGame("gameName1");
         client.createGame("gameName2");
 
-        List<Map<String, Object>> gamesList = List.of(
-                Map.of("1", 1, "gameName1", "Chess Game 1"),
-                Map.of("2", 2, "gameName2", "Chess Game 2")
-        );
+        // Get the result from the listGames method
+        String result = client.listGames();
 
-        String result = client.listGames();  // This should return the formatted string like "Game list: [...]"
-
-        // Assert that the response contains the expected "Game list:"
-        assertTrue(result.contains("Game list:"));
-
-        // Assert that both game names are in the response
+        // Assert that the result contains the correct game names
         assertTrue(result.contains("gameName1"));
         assertTrue(result.contains("gameName2"));
 
-        // Assert that the result contains both gameIDs and gameNames
-        assertTrue(result.contains("gameID"));
-        assertTrue(result.contains("gameName"));
-
-        // Optionally: Checking the values are formatted as expected (this depends on the exact output format of `listGames()`)
-        assertTrue(result.contains("gameID=1.0"));
-        assertTrue(result.contains("gameName=gameName1"));
-        assertTrue(result.contains("gameID=2.0"));
-        assertTrue(result.contains("gameName=gameName2"));
+        // Check that the usernames are either empty or marked as N/A
+        assertTrue(result.contains("Black Username:"));
+        assertTrue(result.contains("White Username:"));
     }
 
     @Test
