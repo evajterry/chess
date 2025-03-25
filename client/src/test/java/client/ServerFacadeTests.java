@@ -1,5 +1,6 @@
 package client;
 
+import client.APIClients.CreateGameRequest;
 import handlers.exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -11,6 +12,7 @@ public class ServerFacadeTests {
 
     private static Server server;
     private ChessClient client;
+    private CreateGameRequest gameResponse;
 
     @BeforeEach
     public void setup() {
@@ -60,7 +62,7 @@ public class ServerFacadeTests {
         String jsonResponse = exception.toJson();
         System.out.println("Actual JSON Output: " + jsonResponse); // Debugging output
 
-        String expectedJson = "{\"status\":400,\"message\":\"Expected: \\u003cusername\\u003e \\u003cpassword\\u003e\"}";
+        String expectedJson = "{\"message\":\"Expected: \\u003cusername\\u003e \\u003cpassword\\u003e\",\"status\":400}";
         assertEquals(expectedJson, jsonResponse);
 
     }
@@ -88,6 +90,17 @@ public class ServerFacadeTests {
         String jsonResponse = exception.toJson();
         assertTrue(jsonResponse.contains("\"message\":\"Expected: \\u003cusername\\u003e \\u003cemail\\u003e \\u003cpassword\\u003e"));
         assertTrue(jsonResponse.contains("\"status\":400"));
+    }
+    @Test
+    public void testCreateGameSuccess() throws Exception {
+        String gameName = "TestGame";
+        client.login("testUser", "testPass");
+
+        String response = client.createGame(gameName);
+        String responseString = "Game created under the name " + gameName + ".";
+
+        assertNotNull(response);
+        assertEquals(response, responseString);
     }
 
 
