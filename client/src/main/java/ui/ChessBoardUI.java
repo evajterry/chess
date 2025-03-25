@@ -23,6 +23,7 @@ public class ChessBoardUI {
     private static final String EMPTY = "  ";
 
     public static void printChessBoard(String teamColor) {
+        System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         board.resetBoard();
 

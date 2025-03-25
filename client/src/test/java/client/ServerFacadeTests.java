@@ -5,6 +5,8 @@ import handlers.exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
@@ -168,6 +170,49 @@ public class ServerFacadeTests {
 
         String jsonResponse = exception.toJson();
         assertTrue(jsonResponse.contains("\"status\":400"));
+    }
+
+    @Test
+    public void testJoinGameSuccess() throws ResponseException {
+        client.login("testUser", "testPass");
+
+        String[] params = {"1", "BLACK"};
+
+        String result = client.playGame(params);
+        assertTrue(result.contains("joined"));
+
+    }
+
+    @Test
+    void testObserveGameSuccess() throws ResponseException {
+        String[] params = {"1"};
+
+        assertDoesNotThrow(() -> client.observeGame(params));
+    }
+
+    @Test
+    void testObserveGameWithoutGameNumber() {
+        String[] params = {};
+        Exception exception = assertThrows(ResponseException.class, () -> {
+            client.observeGame(params); // Empty game number
+        });
+
+        assertNotNull(exception);
+        assertTrue(exception.getMessage().contains("Expected: <gameNumber>"));
+    }
+
+    @Test
+    void testJoinGameWithInvalidGameID() throws ResponseException {
+        client.login("testUser", "testPass");
+
+        String[] params = {"b", "BLACK"};
+
+        Exception exception = assertThrows(NumberFormatException.class, () -> {
+            client.playGame(params);
+        });
+
+        assertNotNull(exception);
+        assertTrue(exception.getMessage().contains("For input string"));
     }
 
 }

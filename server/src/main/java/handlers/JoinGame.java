@@ -20,7 +20,6 @@ public class JoinGame {
         try {
             String authToken = req.headers("Authorization");
             var gameData = new Gson().fromJson(req.body(), GameData.class);
-            System.out.print(authToken);
             int gameID = gameData.gameID();
 
             MyRequestBody body = gson.fromJson(req.body(), MyRequestBody.class);

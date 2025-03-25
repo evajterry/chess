@@ -133,12 +133,9 @@ public class SqlGameAccess implements GameDAO {
             GameData updatedGame = targetGame;
             switch (requestedTeam) {
                 case "WHITE" -> {
-                    System.out.println("on line 86");
                     if (targetGame.whiteUsername() == null) {
                         updatedGame = updatedGame.updateWhiteUsername(username);
-                        System.out.println("on line 89, game is updated to include white user");
                     } else {
-                        System.out.println("about to throw an exception");
                         throw new ResponseException(400, "Error: White team already taken");
                     }
                 }

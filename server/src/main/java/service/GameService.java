@@ -34,7 +34,6 @@ public class GameService {
     public Object createNewGame(String authToken, String gameName) throws ResponseException {
         // reasons to throw errors: (1) authToken not valid (2) gameName invalid?
         if (!isValidAuthToken(authToken)) {
-            System.out.print(authToken);
             throw new ResponseException(401, "Error: authToken issue");
         }
         if (!isValidGameRequest(gameName)) {
@@ -63,7 +62,7 @@ public class GameService {
         if (!acceptedTeamColor(reqTeam)) {
             throw new ResponseException(400, "Error: bad team color request");
         }else {
-            System.out.print(authToken + "\n" + gameID + "\n" + reqTeam);
+//            System.out.print(authToken + "\n" + gameID + "\n" + reqTeam);
 
             if (!sqlGameAccess.joinNewGame(authToken, gameID, reqTeam)) {
                 throw new ResponseException(403, "Error: already taken");
