@@ -1,6 +1,6 @@
 package dataaccess;
 
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 
 import java.sql.SQLException;
 

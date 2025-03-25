@@ -1,12 +1,9 @@
 package dataaccess;
 
-import handlers.exception.ResponseException;
-import model.GameData;
+import exception.ResponseException;
 import model.UserData;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 
 public interface UserDAO {
     void deleteAllData() throws ResponseException;

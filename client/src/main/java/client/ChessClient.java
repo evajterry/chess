@@ -1,16 +1,13 @@
 package client;
 
 import client.APIClients.JoinGameRequest;
-import com.sun.nio.sctp.NotificationHandler;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import model.AuthData;
-import model.GameData;
 import model.UserData;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ChessClient {
     private String username = null;

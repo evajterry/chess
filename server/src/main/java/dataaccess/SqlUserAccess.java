@@ -1,13 +1,13 @@
 package dataaccess;
 
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Objects;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 

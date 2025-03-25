@@ -1,6 +1,6 @@
 package service;
 import dataaccess.*;
-import handlers.exception.*;
+import exception.ResponseException;
 
 import java.util.List;
 import java.util.Map;

@@ -2,7 +2,6 @@ package dataaccess;
 
 import model.UserData;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class UserAccess implements UserDAO {

@@ -2,9 +2,8 @@ package service;
 import dataaccess.DataAccessException;
 import dataaccess.SqlUserAccess;
 import dataaccess.UserAccess;
-import handlers.exception.*;
+import exception.ResponseException;
 import model.UserData;
-import org.eclipse.jetty.client.api.Response;
 
 import java.sql.SQLException;
 

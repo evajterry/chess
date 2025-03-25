@@ -1,14 +1,12 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
 import client.APIClients.CreateGameRequest;
 import client.APIClients.JoinGameRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -17,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;

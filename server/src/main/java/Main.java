@@ -1,10 +1,7 @@
 import chess.*;
 import dataaccess.*;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import server.Server;
-import service.AuthService;
-import service.GameService;
-import service.UserService;
 
 public class Main {
     public static void main(String[] args) throws ResponseException, DataAccessException {

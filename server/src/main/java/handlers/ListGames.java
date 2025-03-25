@@ -1,9 +1,10 @@
 package handlers;
 
 import com.google.gson.Gson;
+import exception.ErrorResponse;
+import exception.ResponseException;
 import spark.Request;
 import spark.Response;
-import handlers.exception.*;
 import service.*;
 import java.util.List;
 import java.util.Map;

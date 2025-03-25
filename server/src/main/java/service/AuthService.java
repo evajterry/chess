@@ -1,9 +1,7 @@
 package service;
 
-import dataaccess.DataAccessException;
 import dataaccess.SqlAuthAccess;
-import handlers.exception.*;
-import model.AuthData;
+import exception.ResponseException;
 
 public class AuthService {
     private final SqlAuthAccess sqlAuthAccess;

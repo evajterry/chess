@@ -1,12 +1,9 @@
 package handlers;
-import model.*;
 import com.google.gson.Gson;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 public class Serializer {
     public static Object registeredUser(UserData user, String authToken) {

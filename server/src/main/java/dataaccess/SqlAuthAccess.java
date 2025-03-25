@@ -1,14 +1,12 @@
 package dataaccess;
 
-import com.google.gson.Gson;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 

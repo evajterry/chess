@@ -1,7 +1,7 @@
 package client;
 
 import client.APIClients.CreateGameRequest;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,9 +1,8 @@
 package handlers;
 
-import org.eclipse.jetty.server.Authentication;
+import exception.ResponseException;
 import spark.Request;
 import spark.Response;
-import handlers.exception.*;
 import service.*;
 
 public class DeleteAllData {

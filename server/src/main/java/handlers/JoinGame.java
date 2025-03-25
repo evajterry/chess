@@ -2,10 +2,11 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
+import exception.ErrorResponse;
+import exception.ResponseException;
 import model.GameData;
 import spark.Request;
 import spark.Response;
-import handlers.exception.*;
 import service.*;
 
 public class JoinGame {

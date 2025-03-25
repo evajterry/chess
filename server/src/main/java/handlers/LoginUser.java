@@ -1,10 +1,10 @@
 package handlers;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
+import exception.ErrorResponse;
+import exception.ResponseException;
 import spark.Request;
 import spark.Response;
-import handlers.exception.*;
 import service.*;
 import model.UserData;
 

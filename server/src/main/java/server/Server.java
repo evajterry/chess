@@ -2,7 +2,7 @@ package server;
 
 import dataaccess.*;
 import handlers.*;
-import handlers.exception.ResponseException;
+import exception.ResponseException;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
