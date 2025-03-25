@@ -15,15 +15,16 @@ public class ServerFacadeTests {
 
     @BeforeEach
     public void setup() {
-        client = new ChessClient("http://localhost:8080"); // Adjust if needed
+        client = new ChessClient("http://localhost:8081");
     }
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(8080);
+        var port = server.run(8081);
         System.out.println("Started test HTTP server on " + port);
     }
+
 
     @AfterAll
     static void stopServer() {
@@ -33,14 +34,12 @@ public class ServerFacadeTests {
     @Test
     @Order(3)
     public void testLoginSuccess() throws ResponseException {
-        // Register a test user first (needed before login)
         String username = "testUser";
         String email = "test@example.com";
         String password = "testPass";
 
 //        client.register(username, email, password);
 
-        // Now attempt login with the same credentials
         String response = client.login(username, password);
 
         assertNotNull(response);
@@ -58,7 +57,6 @@ public class ServerFacadeTests {
     public void testLoginMissingParameters() {
         ResponseException exception = assertThrows(ResponseException.class, () -> client.login("onlyUsername"));
 
-        // Assert that the status code and message are correct
         assertEquals(400, exception.statusCode());
         assertEquals("Expected: <username> <password>", exception.getMessage());
     }
@@ -70,11 +68,9 @@ public class ServerFacadeTests {
         String username = "newUser";
         String password = "securePass123";
         String email = "newUser@example.com";
-
-        // Assuming register() returns some kind of success message or object
         var response = client.register(username, email, password);
 
-        assertNotNull(response);  // Ensure response isn't null
+        assertNotNull(response);
         assertTrue(response.contains("success") || response.contains(username)); // Check for expected success content
     }
 
@@ -107,12 +103,11 @@ public class ServerFacadeTests {
     @Test
     @Order(7)
     public void testLogoutSuccess() throws Exception {
-        // Assuming that the user is already logged in with a valid token
-        client.login("testUser", "testPass"); // or set the necessary pre-conditions
+        client.login("testUser", "testPass");
 
-        String response = client.logout(); // Log the user out
+        String response = client.logout();
 
-        assertEquals("you signed out", response); // Assumes that the logout() method returns this message
+        assertEquals("you signed out", response);
     }
 
     @Test
@@ -132,14 +127,11 @@ public class ServerFacadeTests {
         client.createGame("gameName1");
         client.createGame("gameName2");
 
-        // Get the result from the listGames method
         String result = client.listGames();
 
-        // Assert that the result contains the correct game names
         assertTrue(result.contains("gameName1"));
         assertTrue(result.contains("gameName2"));
 
-        // Check that the usernames are either empty or marked as N/A
         assertTrue(result.contains("Black Username:"));
         assertTrue(result.contains("White Username:"));
     }

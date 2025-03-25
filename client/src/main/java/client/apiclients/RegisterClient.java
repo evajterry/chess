@@ -12,7 +12,7 @@ import java.net.URL;
 
 public class RegisterClient {
 
-    private static final String SERVER_URL = "http://localhost:8080/user";
+    private static final String SERVER_URL = "http://localhost:8081/user";
 
     public void register(UserData user) throws IOException {
         URL url = new URL(SERVER_URL);
