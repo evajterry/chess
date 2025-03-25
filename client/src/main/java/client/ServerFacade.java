@@ -1,7 +1,7 @@
 package client;
 
-import client.APIClients.CreateGameRequest;
-import client.APIClients.JoinGameRequest;
+import client.apiclients.CreateGameRequest;
+import client.apiclients.JoinGameRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

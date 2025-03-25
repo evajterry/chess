@@ -17,7 +17,7 @@ public class ChessBoardUI {
     private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
     private static final int HEADER_SPACING = 2; // Adjust as needed
-    private static final ChessBoard board = new ChessBoard();
+    private static final ChessBoard BOARD = new ChessBoard();
 
     // Padded characters.
     private static final String EMPTY = "  ";
@@ -25,12 +25,12 @@ public class ChessBoardUI {
     public static void printChessBoard(String teamColor) {
         System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        board.resetBoard();
+        BOARD.resetBoard();
 
         out.print(ERASE_SCREEN);
 
         drawHeaders(out, teamColor);
-        drawChessBoard(out, board, teamColor);
+        drawChessBoard(out, BOARD, teamColor);
         drawHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);

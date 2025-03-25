@@ -1,4 +1,4 @@
-package client.APIClients;
+package client.apiclients;
 import com.google.gson.Gson;
 import model.UserData;
 

@@ -1,4 +1,4 @@
-package client.APIClients;
+package client.apiclients;
 
 public class JoinGameRequest {
     private String playerColor;

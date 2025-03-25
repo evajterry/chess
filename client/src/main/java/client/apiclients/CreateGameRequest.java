@@ -1,4 +1,4 @@
-package client.APIClients;
+package client.apiclients;
 
 public class CreateGameRequest {
     private final String gameName;
