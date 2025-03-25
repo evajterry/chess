@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import client.APIClients.CreateGameRequest;
 import client.APIClients.JoinGameRequest;
 import com.google.gson.Gson;
@@ -52,25 +54,22 @@ public class ServerFacade {
         return authData;
     }
 
-    public JoinGameRequest joinGame(String playerColor, String gameID) throws ResponseException {
+    public JoinGameRequest joinGame(String playerColor, int gameID) throws ResponseException {
         var path = "/game";
-        int intGameID = Integer.parseInt(gameID);
-        System.out.println("Joining game with team: " + playerColor + " and ID: " + gameID);
-        JoinGameRequest requestBody = new JoinGameRequest(intGameID, playerColor);
-        System.out.println("Sending request: " + new Gson().toJson(requestBody));
+        JoinGameRequest requestBody = new JoinGameRequest(gameID, playerColor);
         return this.makeRequest("PUT", path, requestBody, JoinGameRequest.class); // null value
     }
 
     public void observeGame(String gameID) throws ResponseException {
         // figure out a way to observe the specific game
         // figure out how to read in
+
         ui.ChessBoardUI.chessBoard();
     }
 
     public List<Map<String, Object>> listGames() throws ResponseException {
         var path = "/game"; // GET
         JsonObject responseObject = this.makeRequest("GET", path, null, JsonObject.class); // Expect JSON
-        System.out.println("Response: " + responseObject);
         JsonArray gamesArray = responseObject.getAsJsonArray("games");
         return new Gson().fromJson(gamesArray, new TypeToken<List<Map<String, Object>>>(){}.getType());
     }
@@ -90,15 +89,11 @@ public class ServerFacade {
             // handle the header
             if (authToken != null && !authToken.isEmpty()) {
                 http.setRequestProperty("Authorization", authToken);
-                System.out.println("Set request property: " + authToken);
-            }
-            System.out.print("AuthToken: ");
-            System.out.println(authToken);
-
-            writeBody(request, http);
-            http.connect();
+            } // not updated here
+            writeBody(request, http); // not updated here
+            http.connect(); // not here
             throwIfNotSuccessful(http);
-            return readBody(http, responseClass);
+            return readBody(http, responseClass); // not here
         } catch (ResponseException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -110,8 +105,6 @@ public class ServerFacade {
         if (request != null) {
             http.addRequestProperty("Content-Type", "application/json");
             String reqData = new Gson().toJson(request);
-            System.out.print("REQDATA: ");
-            System.out.println(reqData);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
             }
@@ -123,11 +116,8 @@ public class ServerFacade {
         if (http.getContentLength() < 0) {
             try (InputStream respBody = http.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
-                System.out.print("READER: ");
-                System.out.print(reader);
                 if (responseClass != null) {
                     response = new Gson().fromJson(reader, responseClass);
-                    System.out.print(response);
                 }
             }
         }
@@ -136,8 +126,6 @@ public class ServerFacade {
 
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
-        System.out.print("STATUS: ");
-        System.out.println(status);
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {

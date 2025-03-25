@@ -1,5 +1,6 @@
 package client;
 
+import client.APIClients.JoinGameRequest;
 import com.sun.nio.sctp.NotificationHandler;
 import handlers.exception.ResponseException;
 import model.AuthData;
@@ -98,10 +99,12 @@ public class ChessClient {
     public String playGame(String[] params) throws ResponseException { // figure out issues
         if (params.length >= 2) {
             gameNumber = params[0];
+            int intGameID = Integer.parseInt(gameNumber);
             desiredTeam = params[1];
-            server.joinGame(desiredTeam, gameNumber);
+            desiredTeam = desiredTeam.toUpperCase();
+            JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, intGameID);
             ui.ChessBoardUI.chessBoard();
-            return String.format("You joined game %s as %s", gameNumber, desiredTeam); // should I connect this to the api?
+            return String.format("You joined game %s as %s", joinGameRequest.getGameID(), joinGameRequest.getPlayerColor()); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
     }
@@ -146,7 +149,6 @@ public class ChessClient {
 
     public String logout() throws ResponseException {
         state = State.SIGNEDOUT;
-
         server.logout(authToken);
 
         return String.format("you signed out");

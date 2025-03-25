@@ -67,7 +67,7 @@ public class SqlGameAccess implements GameDAO {
         return gamesList;
     }
 
-    public boolean joinNewGame(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+    public boolean joinNewGame2(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
         try {
             if (!sqlAuthAccess.userLoggedIn(authToken)) {
                 throw new ResponseException(401, "Error: unauthorized");
@@ -117,7 +117,7 @@ public class SqlGameAccess implements GameDAO {
     }
 
 
-    public boolean joinNewGame2(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
+    public boolean joinNewGame(String authToken, int gameID, String requestedTeam) throws ResponseException, DataAccessException {
             if (!sqlAuthAccess.userLoggedIn(authToken)) {
                 throw new ResponseException(401, "Error: unauthorized");
             }
@@ -132,7 +132,7 @@ public class SqlGameAccess implements GameDAO {
             }
             GameData updatedGame = targetGame;
             switch (requestedTeam) {
-                case "white" -> {
+                case "WHITE" -> {
                     System.out.println("on line 86");
                     if (targetGame.whiteUsername() == null) {
                         updatedGame = updatedGame.updateWhiteUsername(username);
@@ -142,14 +142,14 @@ public class SqlGameAccess implements GameDAO {
                         throw new ResponseException(400, "Error: White team already taken");
                     }
                 }
-                case "black" -> {
+                case "BLACK" -> {
                     if (targetGame.blackUsername() == null) {
                         updatedGame = updatedGame.updateBlackUsername(username);
                     } else {
                         throw new ResponseException(400, "Error: Black team already taken");
                     }
                 }
-                case "white/black" -> {
+                case "WHITE/BLACK" -> {
                     if (targetGame.whiteUsername() == null) {
                         updatedGame = updatedGame.updateWhiteUsername(username);
                     } else if (targetGame.blackUsername() == null) {

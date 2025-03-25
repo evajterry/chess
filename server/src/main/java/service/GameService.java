@@ -1,11 +1,7 @@
 package service;
 import dataaccess.*;
 import handlers.exception.*;
-import model.GameData;
-import model.UserData;
-import spark.Response;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +22,14 @@ public class GameService {
     public void deleteAllData() throws ResponseException {
         sqlGameAccess.deleteAllData();
     }
+
+//    public ChessBoard loadGame(String gameID) throws Exception {
+//        String json = gameRepo.getGameData(gameID);
+//        if (json == null) {
+//            throw new Exception("Game not found");
+//        }
+//        return objectMapper.readValue(json, ChessBoard.class);
+//    }
 
     public Object createNewGame(String authToken, String gameName) throws ResponseException {
         // reasons to throw errors: (1) authToken not valid (2) gameName invalid?
@@ -69,7 +73,7 @@ public class GameService {
     }
 
     private boolean acceptedTeamColor(String reqTeam) {
-        return Objects.equals(reqTeam, "white") || Objects.equals(reqTeam, "black") || Objects.equals(reqTeam, "WHITE/BLACK");
+        return Objects.equals(reqTeam, "WHITE") || Objects.equals(reqTeam, "BLACK") || Objects.equals(reqTeam, "WHITE/BLACK");
     }
 
     private boolean isValidGameIDRequest(int gameID) {
