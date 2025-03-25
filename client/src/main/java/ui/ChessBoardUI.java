@@ -6,6 +6,7 @@ import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static chess.ChessBoard.getPieceSymbol;
 import static ui.EscapeSequences.*;
@@ -21,28 +22,28 @@ public class ChessBoardUI {
     // Padded characters.
     private static final String EMPTY = "  ";
 
-    public static void chessBoard() {
+    public static void printChessBoard(String teamColor) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         board.resetBoard();
 
         out.print(ERASE_SCREEN);
 
-        drawHeaders(out);
-
-        drawChessBoard(out, board);
-
-        drawHeaders(out);
+        drawHeaders(out, teamColor);
+        drawChessBoard(out, board, teamColor);
+        drawHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
+
     }
 
-    private static void drawHeaders(PrintStream out) {
+    private static void drawHeaders(PrintStream out, String teamColor) {
 
         setBlack(out);
         out.print("   ");
+        String[] headers = getHeadersByColor(teamColor);
 
-        String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h" };
+
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             drawHeader(out, headers[boardCol]);
 
@@ -51,6 +52,14 @@ public class ChessBoardUI {
             }
         }
         out.println();
+    }
+
+    private static String[] getHeadersByColor(String teamColor) {
+        if (Objects.equals(teamColor, "WHITE")) {
+            return new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
+        } else {
+            return new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
+        }
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
@@ -70,10 +79,10 @@ public class ChessBoardUI {
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard chessBoard) {
+    private static void drawChessBoard(PrintStream out, ChessBoard chessBoard, String teamColor) {
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
-            drawRowOfSquares(out, boardRow, chessBoard);
+            drawRowOfSquares(out, boardRow, chessBoard, teamColor);
 
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                 setBlack(out);
@@ -81,30 +90,20 @@ public class ChessBoardUI {
         }
     }
 
-    private static final String[][] PIECES = { // this is gonna have to change
-            {"♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜"},
-            {"♟", "♟", "♟", "♟", "♟", "♟", "♟", "♟"},
-            {" ", " ", " ", " ", " ", " ", " ", " "},
-            {" ", " ", " ", " ", " ", " ", " ", " "},
-            {" ", " ", " ", " ", " ", " ", " ", " "},
-            {" ", " ", " ", " ", " ", " ", " ", " "},
-            {"♙", "♙", "♙", "♙", "♙", "♙", "♙", "♙"},
-            {"♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"}
-    };
-
-    private static void drawRowOfSquares(PrintStream out, int row, ChessBoard chessBoard) {
-
+    private static void drawRowOfSquares(PrintStream out, int row, ChessBoard chessBoard, String teamColor) {
+        int displayRow = teamColor.equalsIgnoreCase("BLACK") ? 7 - row : row;
         for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                drawRowHeader(out, 8 - row); // Print row number on the left
+                drawRowHeader(out, 8 - displayRow, teamColor);
             } else {
                 out.print("   "); // Maintain alignment for empty rows
             }
 
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
-                setSquareColor(out, row, col);
+                int displayCol = teamColor.equalsIgnoreCase("BLACK") ? 7 - col : col;
+                setSquareColor(out, displayRow, displayCol);
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    ChessPiece piece = chessBoard.getPiece(new ChessPosition(row + 1, col + 1));
+                    ChessPiece piece = chessBoard.getPiece(new ChessPosition(displayRow + 1, displayCol + 1));
                     String pieceSymbol = (piece != null) ? getPieceSymbol(piece) : " ";
                     out.print("  " + pieceSymbol + "  ");
                 } else {
@@ -114,7 +113,7 @@ public class ChessBoardUI {
             }
 
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                drawRowHeader(out, 8 - row); // Print row number on the right
+                drawRowHeader(out, 8 - displayRow, teamColor); // Print row number on the right
             } else {
                 out.print("   "); // Maintain alignment for empty rows
             }
@@ -123,7 +122,7 @@ public class ChessBoardUI {
         }
     }
 
-    private static void drawRowHeader(PrintStream out, int rowNum) {
+    private static void drawRowHeader(PrintStream out, int rowNum, String teamColor) {
         setBlack(out);
         out.print(SET_TEXT_COLOR_WHITE);
         out.print(" " + rowNum + " ");

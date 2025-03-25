@@ -64,7 +64,7 @@ public class ServerFacade {
         // figure out a way to observe the specific game
         // figure out how to read in
 
-        ui.ChessBoardUI.chessBoard();
+        ui.ChessBoardUI.printChessBoard("WHITE");
     }
 
     public List<Map<String, Object>> listGames() throws ResponseException {
