@@ -67,6 +67,7 @@ public class ChessClient {
                     - login <yourname> <password>
                     - register <yourname> <email> <password>
                     - quit
+                    - help
                     """;
         }
 
@@ -96,18 +97,29 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: <username> <password>");
     }
 
-    public String playGame(String[] params) throws ResponseException { // figure out issues
+    public String playGame(String[] params) throws ResponseException {
         if (params.length >= 2) {
-            gameNumber = params[0];
-            int intGameID = Integer.parseInt(gameNumber);
-            desiredTeam = params[1];
-            desiredTeam = desiredTeam.toUpperCase();
-            int actualGameID = gameMap.get(intGameID); // put in a try catch block to print nicely
-            JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
+            try {
+                gameNumber = params[0];
+                int intGameID = Integer.parseInt(gameNumber);
+                if (intGameID > gameMap.size()) {
+                    throw new ResponseException(400, "please choose a correct game number");
+                }
+                desiredTeam = params[1];
+                desiredTeam = desiredTeam.toUpperCase();
+                int actualGameID = gameMap.get(intGameID); // put in a try catch block to print nicely
+                JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
 
-            ui.ChessBoardUI.printChessBoard(desiredTeam);
+                ui.ChessBoardUI.printChessBoard(desiredTeam);
 
-            return String.format("You joined game %s as %s", gameNumber, desiredTeam);
+                return String.format("You joined game %s as %s", gameNumber, desiredTeam);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid game number format: " + e.getMessage());
+            } catch (NullPointerException e) {
+                System.out.println("Game ID not found: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("An unexpected error occurred: " + e.getMessage());
+            }
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
     }
