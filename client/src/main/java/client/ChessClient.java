@@ -6,6 +6,7 @@ import model.AuthData;
 import model.UserData;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
+    private final Map<Integer, Integer> gameMap = new HashMap<>();
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -67,7 +69,7 @@ public class ChessClient {
                     - quit
                     """;
         }
-        // Logout, create game, list games, play game, observe game
+
         return """
                 - logout
                 - create-game <gamename>
@@ -80,14 +82,15 @@ public class ChessClient {
     }
 
     public String login(String... params) throws ResponseException {
-        if (params.length >= 2) {
+        if (params.length == 2) {
             state = State.SIGNEDIN;
             username = params[0];
             password = params[1];
-//            server.login(new UserData("sample username", "email", "pass")); // I should be passing in UserData to login right?
+
             UserData user = new UserData(username, null, password);
             AuthData authData = server.login(user);
             authToken = authData.authToken();
+//            listGames();
             return String.format("You signed in as %s", username); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <username> <password>");
@@ -99,10 +102,12 @@ public class ChessClient {
             int intGameID = Integer.parseInt(gameNumber);
             desiredTeam = params[1];
             desiredTeam = desiredTeam.toUpperCase();
-            JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, intGameID);
+            int actualGameID = gameMap.get(intGameID); // put in a try catch block to print nicely
+            JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
+
             ui.ChessBoardUI.printChessBoard(desiredTeam);
 
-            return String.format("You joined game %s as %s", gameNumber, joinGameRequest.getPlayerColor());
+            return String.format("You joined game %s as %s", gameNumber, desiredTeam);
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
     }
@@ -117,6 +122,8 @@ public class ChessClient {
     }
 
     public String listGames() throws ResponseException {
+//        int i = 1;
+        // need another map
         List<Map<String, Object>> gamesList = server.listGames();
 
         StringBuilder formattedList = new StringBuilder("Game list:\n");
@@ -127,9 +134,10 @@ public class ChessClient {
             String gameName = (String) game.get("gameName");
             String blackUsername = game.containsKey("blackUsername") ? (String) game.get("blackUsername") : " ";
             String whiteUsername = game.containsKey("whiteUsername") ? (String) game.get("whiteUsername") : " ";
+            gameMap.put(i + 1, gameId);
 
-            formattedList.append(String.format("%d. Game ID: %s\n   Game Name: %s\n   Black Username: %s\n   White Username: %s\n",
-                    i + 1, gameId, gameName, blackUsername, whiteUsername));
+            formattedList.append(String.format("%d. Game Name: %s\n   Black Username: %s\n   White Username: %s\n",
+                    i + 1, gameName, blackUsername, whiteUsername));
         }
         return formattedList.toString();
     }
@@ -142,7 +150,7 @@ public class ChessClient {
     }
 
     public String register(String... params) throws ResponseException {
-        if (params.length >= 3) {
+        if (params.length == 3) {
             state = State.SIGNEDIN;
             username = params[0];
             email = params[1];  // Second element is the email
@@ -151,10 +159,10 @@ public class ChessClient {
             UserData userData = new UserData(username, email, password);
             AuthData authData = server.register(userData);
             authToken = authData.authToken();
+
             return String.format("You are now registered and logged in as %s.", username);
         }
         throw new ResponseException(400, "Expected: <username> <email> <password>");
-                //public record UserData(String username, String email, String password) {
     }
 
     public String logout() throws ResponseException {

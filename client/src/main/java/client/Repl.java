@@ -29,8 +29,9 @@ public class Repl {
                 result = client.evalPreLogin(line);
                 System.out.print(BLUE + result);
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(msg);
+//                var msg = e.toString();
+                System.out.print(e.getMessage());
+                //
             }
         }
         System.out.println();

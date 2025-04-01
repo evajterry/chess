@@ -21,8 +21,8 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(8081);
-        System.out.println("Started test HTTP server on " + port);
+        var port = server.run(0);  // Use 0 to let Spark/Jetty choose the port
+        System.out.println("Started test HTTP server on port " + port);
     }
 
 
