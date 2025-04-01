@@ -6,12 +6,13 @@ import java.util.Scanner;
 
 import static client.EscapeSequences.*;
 import com.sun.nio.sctp.NotificationHandler;
+import websocket.messages.ServerMessage;
 
 public class Repl {
     private final ChessClient client;
 
     public Repl(String serverUrl) {
-        client = new ChessClient(serverUrl); // idk if i should have notificationHandler here
+        client = new ChessClient(serverUrl, (client.websocket.NotificationHandler) this); // idk if i should have notificationHandler here
     }
 
     public void run() {
@@ -36,6 +37,11 @@ public class Repl {
         }
         System.out.println();
     }
+
+//    public void notify(ServerMessage messageNotification) {
+//        System.out.println(RED + notification.message());
+//        printPrompt();
+//    }
 
     private void printPrompt() {
         System.out.print("\n" + RESET + ">>> " + GREEN);

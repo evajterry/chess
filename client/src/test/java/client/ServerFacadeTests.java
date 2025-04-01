@@ -1,6 +1,7 @@
 package client;
 
 import client.apiclients.CreateGameRequest;
+import client.websocket.NotificationHandler;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -15,7 +16,7 @@ public class ServerFacadeTests {
 
     @BeforeEach
     public void setup() {
-        client = new ChessClient("http://localhost:8081");
+        client = new ChessClient("http://localhost:8081", (NotificationHandler) this); // don't know if i did that right
     }
 
     @BeforeAll

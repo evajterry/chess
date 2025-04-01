@@ -1,6 +1,8 @@
 package client;
 
 import client.apiclients.JoinGameRequest;
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
@@ -22,10 +24,13 @@ public class ChessClient {
     private State state = State.SIGNEDOUT;
     private final Map<Integer, Integer> gameMap = new HashMap<>();
 
-    public ChessClient(String serverUrl) {
+    private WebSocketFacade ws;
+    private final NotificationHandler notificationHandler;
+
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
-        // notification handler used to be here - is that part of websocket instead?
+        this.notificationHandler = notificationHandler;
     }
 
     public String preLogin() {
@@ -108,6 +113,9 @@ public class ChessClient {
                 desiredTeam = params[1];
                 desiredTeam = desiredTeam.toUpperCase();
                 int actualGameID = gameMap.get(intGameID); // put in a try catch block to print nicely
+
+                ws = new WebSocketFacade(serverUrl, notificationHandler);
+
                 JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
 
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
@@ -132,6 +140,13 @@ public class ChessClient {
         }
         throw new ResponseException(400, "Expected: <gameNumber>");
     }
+
+// WHAT OBSERVE SHOULD DO
+
+//    Call the server join HTTP API to join them to the game. This step is only done for players. Observers do not need to make the join HTTP API request.
+//    Open a WebSocket connection with the server (using the /ws endpoint) so it can send and receive gameplay messages.
+//    Send a CONNECT WebSocket message to the server.
+//    Transition to the gameplay UI. The gameplay UI draws the chess board and allows the user to perform the gameplay commands described in the previous section.
 
     public String listGames() throws ResponseException {
 //        int i = 1;
