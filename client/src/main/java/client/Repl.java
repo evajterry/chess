@@ -1,18 +1,19 @@
 package client;
 
-import com.sun.nio.sctp.NotificationHandler;
+import client.websocket.NotificationHandler;
 
 import java.util.Scanner;
 
 import static client.EscapeSequences.*;
-import com.sun.nio.sctp.NotificationHandler;
+
+import exception.ResponseException;
 import websocket.messages.ServerMessage;
 
-public class Repl {
+public class Repl implements NotificationHandler {
     private final ChessClient client;
 
-    public Repl(String serverUrl) {
-        client = new ChessClient(serverUrl, (client.websocket.NotificationHandler) this); // idk if i should have notificationHandler here
+    public Repl(String serverUrl) throws ResponseException {
+        client = new ChessClient(serverUrl, this); // idk if i should have notificationHandler here
     }
 
     public void run() {
@@ -30,18 +31,17 @@ public class Repl {
                 result = client.evalPreLogin(line);
                 System.out.print(BLUE + result);
             } catch (Throwable e) {
-//                var msg = e.toString();
                 System.out.print(e.getMessage());
-                //
             }
         }
         System.out.println();
     }
 
-//    public void notify(ServerMessage messageNotification) {
-//        System.out.println(RED + notification.message());
-//        printPrompt();
-//    }
+    @Override
+    public void notify(ServerMessage message) {
+        System.out.println(RED + message.getMessage()); // Assuming getMessage() exists
+        printPrompt();
+    }
 
     private void printPrompt() {
         System.out.print("\n" + RESET + ">>> " + GREEN);

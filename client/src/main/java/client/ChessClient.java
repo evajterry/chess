@@ -6,6 +6,7 @@ import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
+import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,8 +28,9 @@ public class ChessClient {
     private WebSocketFacade ws;
     private final NotificationHandler notificationHandler;
 
-    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        this.ws = new WebSocketFacade(serverUrl, notificationHandler); // move
         this.serverUrl = serverUrl;
         this.notificationHandler = notificationHandler;
     }
@@ -112,11 +114,12 @@ public class ChessClient {
                 }
                 desiredTeam = params[1];
                 desiredTeam = desiredTeam.toUpperCase();
-                int actualGameID = gameMap.get(intGameID); // put in a try catch block to print nicely
-
-                ws = new WebSocketFacade(serverUrl, notificationHandler);
+                int actualGameID = gameMap.get(intGameID);
 
                 JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
+//                ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+//                notification.setMessage(username + " joined game " + gameNumber + " as " + desiredTeam);
+//                ws.sendMessage(notification); -- done by websocket
 
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
 

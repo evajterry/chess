@@ -8,6 +8,8 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
+import static spark.Spark.webSocket;
+
 public class Server {
     private final AuthService authService;
     private final GameService gameService;
@@ -20,6 +22,7 @@ public class Server {
     private final JoinGame joinGameHandler;
     private final ListGames listGamesHandler;
     private final DBConfig configuration;
+    private final HandleWebSocket webSocketHandler;
 
     public Server() {
         AuthService tempAuthService = null;
@@ -33,6 +36,7 @@ public class Server {
         JoinGame tempJoinGameHandler = null;
         ListGames tempListGamesHandler = null;
         DBConfig tempConfiguration = null;
+        HandleWebSocket tempWebSocketHandler = null;
 
         try {
             UserAccess userAccess = new UserAccess();
@@ -55,6 +59,8 @@ public class Server {
             tempListGamesHandler = new ListGames(tempGameService);
             tempConfiguration = new DBConfig();
 
+            tempWebSocketHandler = new HandleWebSocket(tempGameService);
+
         } catch (ResponseException | DataAccessException e) {
             System.err.println("Error initializing Server: " + e.getMessage());
             e.printStackTrace();
@@ -71,6 +77,7 @@ public class Server {
         this.joinGameHandler = tempJoinGameHandler;
         this.listGamesHandler = tempListGamesHandler;
         this.configuration = tempConfiguration;
+        this.webSocketHandler = tempWebSocketHandler;
     }
 
     public int run(int desiredPort) {
@@ -91,6 +98,8 @@ public class Server {
             Spark.post("/game", createNewGameHandler::handle);
             Spark.put("/game", joinGameHandler::handle);
             Spark.get("/game", listGamesHandler::handle);
+            // make a websocket endpoint - add handler, add service or data access methods,
+            webSocket("/ws", webSocketHandler);
 
             Spark.exception(ResponseException.class, this::exceptionHandler);
             Spark.exception(Exception.class, this::exceptionHandler);

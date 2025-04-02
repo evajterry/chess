@@ -15,7 +15,7 @@ public class ServerFacadeTests {
     private CreateGameRequest gameResponse;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws ResponseException {
         client = new ChessClient("http://localhost:8081", (NotificationHandler) this); // don't know if i did that right
     }
 
