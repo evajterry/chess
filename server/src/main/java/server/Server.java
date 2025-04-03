@@ -85,6 +85,7 @@ public class Server {
             Spark.port(desiredPort);
 
             Spark.staticFiles.location("web");
+            webSocket("/ws", webSocketHandler);
             Spark.get("/db", (req, res) -> "Database route active!");
 
             // Start database here
@@ -99,7 +100,7 @@ public class Server {
             Spark.put("/game", joinGameHandler::handle);
             Spark.get("/game", listGamesHandler::handle);
             // make a websocket endpoint - add handler, add service or data access methods,
-            webSocket("/ws", webSocketHandler);
+
 
             Spark.exception(ResponseException.class, this::exceptionHandler);
             Spark.exception(Exception.class, this::exceptionHandler);
