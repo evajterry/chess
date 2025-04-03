@@ -119,6 +119,10 @@ public class ChessClient {
                 int actualGameID = gameMap.get(intGameID);
 
                 JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
+                this.ws.enterGame(new UserGameCommand(
+                        UserGameCommand.CommandType.CONNECT,
+                        authToken,
+                        intGameID));
                 broadcastGameJoin(actualGameID, desiredTeam);
 
                 ui.ChessBoardUI.printChessBoard(desiredTeam);

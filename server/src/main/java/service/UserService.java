@@ -26,7 +26,6 @@ public class UserService {
         } else {
             sqlUserAccess.logoutUser(authToken);
         }
-//        return userAccess.logoutUser(authToken);
     }
 
     private boolean isValidAuthToken(String authToken) throws DataAccessException {

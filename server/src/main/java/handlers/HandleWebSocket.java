@@ -1,28 +1,35 @@
 package handlers;
 
 import com.google.gson.Gson;
+import exception.ResponseException;
+import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 
+import service.AuthService;
 import service.GameService;
+import service.UserService;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @WebSocket
 public class HandleWebSocket {
     private final GameService gameService;
+    private final AuthService authService;
 
     private static final ConcurrentHashMap<Session, String> activeSessions = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Session, Integer> sessionGameMap = new ConcurrentHashMap<>();
 
     private static final Gson gson = new Gson();
 
-    public HandleWebSocket(GameService gameService) {
+    public HandleWebSocket(GameService gameService, AuthService authService) {
         this.gameService = gameService;
-
+        this.authService = authService;
     }
 
     @OnWebSocketConnect
@@ -38,30 +45,59 @@ public class HandleWebSocket {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException {
+    public void onMessage(Session session, String message) throws IOException, ResponseException {
         System.out.println("Received WebSocket message: " + message);
 
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+
         switch (command.getCommandType()) {
             case CONNECT:
                 activeSessions.put(session, command.getAuthToken());
-                System.out.println("User connected with authToken: " + command.getAuthToken());
+                sessionGameMap.put(session, command.getGameID());
 
-                String notificationMessage = String.format("User %s connected to the game", command.getAuthToken());
+                String playerName = getPlayerNameFromAuthToken(command.getAuthToken(), command.getGameID()); // Method to determine player's name
+                String notificationMessage = String.format("User %s has joined game %d as a player.", playerName, command.getGameID());
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
 
-                broadcastToGame(Integer.valueOf(command.getGameID()), notification); // Ensure gameID conversion to Integer
+                // Broadcast to other clients (not the one sending this)
+                broadcastToGame(command.getGameID(), notification);
                 break;
-            case MAKE_MOVE:
-                // Handle game moves
-                break;
+            // other cases for MAKE_MOVE, LEAVE, RESIGN...
             case LEAVE:
-                session.close();
-                break;
-            case RESIGN:
-                // Handle resignation
                 break;
         }
+    }
+
+    private String getPlayerNameFromAuthToken(String authToken, int gameID) throws ResponseException {
+        List<Map<String, Object>> gameData = gameService.listGames(authToken);
+
+        for (Map<String, Object> gameMap : gameData) {
+            if ((int) gameMap.get("gameID") == gameID) {
+                String whiteUsername = (String) gameMap.get("whiteUsername");
+                String blackUsername = (String) gameMap.get("blackUsername");
+
+                String username = authTokenToUsername(authToken, whiteUsername, blackUsername);
+
+                // Determine and return player and team information
+                if (username.equals(whiteUsername)) {
+                    return String.format("User %s is playing with the team color WHITE", username);
+                } else if (username.equals(blackUsername)) {
+                    return String.format("User %s is playing with the team color BLACK", username);
+                } else {
+                    return "User not found in this game.";
+                }
+            }
+        }
+        return "didn't return anything else";
+    }
+
+    private String authTokenToUsername(String authToken, String whiteUsername, String blackUsername) {
+        return authService.getUsernameFromAuthToken(authToken);
+    }
+
+    private String determinePlayerSide(String authToken) {
+        // Logic to determine the player side (e.g., check a map or a service)
+        return "black"; // or "white", according to your application logic
     }
 
     @OnWebSocketClose

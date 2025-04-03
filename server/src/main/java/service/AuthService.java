@@ -10,6 +10,10 @@ public class AuthService {
         this.sqlAuthAccess = sqlAuthAccess;
     }
 
+    public String getUsernameFromAuthToken(String authToken) {
+        return sqlAuthAccess.getUsernameFromAuthToken(authToken);
+    }
+
     public void deleteAllData() throws ResponseException {
         sqlAuthAccess.deleteAllData();
     }

@@ -59,7 +59,7 @@ public class Server {
             tempListGamesHandler = new ListGames(tempGameService);
             tempConfiguration = new DBConfig();
 
-            tempWebSocketHandler = new HandleWebSocket(tempGameService);
+            tempWebSocketHandler = new HandleWebSocket(tempGameService, tempAuthService);
 
         } catch (ResponseException | DataAccessException e) {
             System.err.println("Error initializing Server: " + e.getMessage());

@@ -2,6 +2,7 @@ package dataaccess;
 
 import exception.ResponseException;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +33,27 @@ public class SqlAuthAccess implements AuthDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public String getUsernameFromAuthToken(String authToken) {
+        String query = "SELECT username FROM AuthData WHERE authToken = ? LIMIT 1";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, authToken);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database access error:", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String createAuthToken() {
