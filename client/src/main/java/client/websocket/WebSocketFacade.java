@@ -43,7 +43,7 @@ public class WebSocketFacade extends Endpoint {
                     if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
                         System.out.println("Notification: " + serverMessage.getMessage());
                     }
-                    notificationHandler.notify(serverMessage);
+//                    notificationHandler.notify(serverMessage);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

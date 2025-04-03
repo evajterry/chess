@@ -56,10 +56,9 @@ public class HandleWebSocket {
                 sessionGameMap.put(session, command.getGameID());
 
                 String playerName = getPlayerNameFromAuthToken(command.getAuthToken(), command.getGameID()); // Method to determine player's name
-                String notificationMessage = String.format("User %s has joined game %d as a player.", playerName, command.getGameID());
+                String notificationMessage = String.format("User %s joined game %d as a player.", playerName, command.getGameID());
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
 
-                // Broadcast to other clients (not the one sending this)
                 broadcastToGame(command.getGameID(), notification);
                 break;
             // other cases for MAKE_MOVE, LEAVE, RESIGN...
@@ -80,9 +79,9 @@ public class HandleWebSocket {
 
                 // Determine and return player and team information
                 if (username.equals(whiteUsername)) {
-                    return String.format("User %s is playing with the team color WHITE", username);
+                    return String.format("%s, playing as WHITE,", username);
                 } else if (username.equals(blackUsername)) {
-                    return String.format("User %s is playing with the team color BLACK", username);
+                    return String.format("%s playing as BLACK,", username);
                 } else {
                     return "User not found in this game.";
                 }
