@@ -61,7 +61,18 @@ public class HandleWebSocket {
 
                 broadcastToGame(command.getGameID(), notification, session);
                 break;
-            // other cases for MAKE_MOVE, LEAVE, RESIGN...
+
+            case OBSERVE:
+                activeSessions.put(session, command.getAuthToken());
+                sessionGameMap.put(session, command.getGameID());
+
+                String observingPlayerName = authService.getUsernameFromAuthToken(command.getAuthToken());
+                String obsNotificationMessage = String.format("User %s is observing game %d.", observingPlayerName, command.getGameID());
+                ServerMessage obsNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, obsNotificationMessage);
+
+                // Broadcast to other clients excluding current observer
+                broadcastToGame(command.getGameID(), obsNotification, session);
+                break;
             case LEAVE:
                 break;
         }

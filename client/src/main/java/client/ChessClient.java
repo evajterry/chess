@@ -147,9 +147,24 @@ public class ChessClient {
 
     public String observeGame(String[] params) throws ResponseException {
         if (params.length >= 1) {
-            gameNumber = params[0];
-            server.observeGame(gameNumber);
-            return String.format("You joined game %s as an observer", gameNumber); // should I connect this to the api?
+            try {
+                gameNumber = params[0];
+                int intGameID = Integer.parseInt(gameNumber);
+
+                if (!gameMap.containsValue(intGameID)) {
+                    throw new ResponseException(400, "please choose a correct game number");
+                }
+
+                // Open WebSocket connection to observe the game
+                this.ws.enterGame(new UserGameCommand(
+                        UserGameCommand.CommandType.OBSERVE,
+                        authToken,
+                        intGameID));
+
+                return String.format("You joined game %s as an observer", gameNumber);
+            } catch (Exception e) {
+                System.out.println("An unexpected error occurred: " + e.getMessage());
+            }
         }
         throw new ResponseException(400, "Expected: <gameNumber>");
     }
