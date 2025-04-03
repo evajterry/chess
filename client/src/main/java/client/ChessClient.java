@@ -4,8 +4,10 @@ import client.apiclients.JoinGameRequest;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
+import handlers.HandleWebSocket;
 import model.AuthData;
 import model.UserData;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
@@ -117,9 +119,7 @@ public class ChessClient {
                 int actualGameID = gameMap.get(intGameID);
 
                 JoinGameRequest joinGameRequest = server.joinGame(desiredTeam, actualGameID);
-//                ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-//                notification.setMessage(username + " joined game " + gameNumber + " as " + desiredTeam);
-//                ws.sendMessage(notification); -- done by websocket
+                broadcastGameJoin(actualGameID, desiredTeam);
 
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
 
@@ -133,6 +133,13 @@ public class ChessClient {
             }
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
+    }
+
+    private void broadcastGameJoin(int actualGameID, String desiredTeam) {
+        String notificationMessage = String.format("A player joined the game %d as %s", actualGameID, desiredTeam);
+        ServerMessage joinNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
+
+        HandleWebSocket.broadcastToGame(actualGameID, joinNotification);
     }
 
     public String observeGame(String[] params) throws ResponseException {
