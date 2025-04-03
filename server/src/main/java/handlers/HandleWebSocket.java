@@ -59,7 +59,7 @@ public class HandleWebSocket {
                 String notificationMessage = String.format("User %s joined game %d as a player.", playerName, command.getGameID());
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
 
-                broadcastToGame(command.getGameID(), notification);
+                broadcastToGame(command.getGameID(), notification, session);
                 break;
             // other cases for MAKE_MOVE, LEAVE, RESIGN...
             case LEAVE:
@@ -79,9 +79,9 @@ public class HandleWebSocket {
 
                 // Determine and return player and team information
                 if (username.equals(whiteUsername)) {
-                    return String.format("%s, playing as WHITE,", username);
+                    return String.format("%s, playing as WHITE", username);
                 } else if (username.equals(blackUsername)) {
-                    return String.format("%s playing as BLACK,", username);
+                    return String.format("%s playing as BLACK", username);
                 } else {
                     return "User not found in this game.";
                 }
@@ -113,14 +113,14 @@ public class HandleWebSocket {
     /**
      * Broadcasts a message to all players in a specific game.
      */
-    public static void broadcastToGame(int gameID, ServerMessage message) {
+    public static void broadcastToGame(int gameID, ServerMessage message, Session initiatingSession) {
         String jsonMessage = gson.toJson(message);
 
         for (var entry : sessionGameMap.entrySet()) {
             Session session = entry.getKey();
             int sessionGameID = entry.getValue();
 
-            if (sessionGameID == gameID) {
+            if (sessionGameID == gameID && !session.equals(initiatingSession)) {
                 try {
                     session.getRemote().sendString(jsonMessage);
                 } catch (IOException e) {

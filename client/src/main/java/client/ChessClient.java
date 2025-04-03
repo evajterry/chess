@@ -123,7 +123,6 @@ public class ChessClient {
                         UserGameCommand.CommandType.CONNECT,
                         authToken,
                         intGameID));
-                broadcastGameJoin(actualGameID, desiredTeam);
 
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
 
@@ -143,7 +142,7 @@ public class ChessClient {
         String notificationMessage = String.format("A player joined the game %d as %s", actualGameID, desiredTeam);
         ServerMessage joinNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
 
-        HandleWebSocket.broadcastToGame(actualGameID, joinNotification);
+//        HandleWebSocket.broadcastToGame(actualGameID, joinNotification);
     }
 
     public String observeGame(String[] params) throws ResponseException {
