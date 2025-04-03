@@ -10,10 +10,7 @@ import model.UserData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ChessClient {
     private String username = null;
@@ -70,6 +67,31 @@ public class ChessClient {
         }
     }
 
+    public String evalGamePlay(String input) throws ResponseException {
+        var tokens = input.toLowerCase().split(" ");
+        var cmd = (tokens.length > 0) ? tokens[0] : "help";
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        return switch (cmd) {
+            case "redraw-board" -> redrawBoard();
+            default -> gameHelp();
+        };
+    }
+
+    private String gameHelp() {
+        return """
+                    - redraw-board
+                    - leave
+                    - make-move
+                    - resign
+                    - highlight-moves
+                    """;
+    }
+
+    private String redrawBoard() {
+        ui.ChessBoardUI.printChessBoard(desiredTeam);
+        return " ";
+    }
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
@@ -123,10 +145,23 @@ public class ChessClient {
                         UserGameCommand.CommandType.CONNECT,
                         authToken,
                         intGameID));
-
+                System.out.println(String.format("You joined game %s as %s", gameNumber, desiredTeam));
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
+                Scanner scanner = new Scanner(System.in);
+                System.out.println("Type 'help' to see what you can do!");
+                while (true) {
+                    String input = scanner.nextLine().trim();
 
-                return String.format("You joined game %s as %s", gameNumber, desiredTeam);
+                    if (input.equalsIgnoreCase("leave")) {
+                        System.out.println("Leaving the game...");
+                        return "Left game.";
+                    } else {
+                        String commandResult = evalGamePlay(input);
+                        if (!commandResult.isBlank()) {
+                            System.out.println(commandResult);
+                        }
+                    }
+                }
             } catch (NumberFormatException e) {
                 System.out.println("Invalid game number format: " + e.getMessage());
             } catch (NullPointerException e) {
@@ -155,11 +190,11 @@ public class ChessClient {
                     throw new ResponseException(400, "please choose a correct game number");
                 }
 
-                // Open WebSocket connection to observe the game
                 this.ws.enterGame(new UserGameCommand(
                         UserGameCommand.CommandType.OBSERVE,
                         authToken,
                         intGameID));
+                ui.ChessBoardUI.printChessBoard("WHITE");
 
                 return String.format("You joined game %s as an observer", gameNumber);
             } catch (Exception e) {
