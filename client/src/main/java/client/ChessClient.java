@@ -74,14 +74,30 @@ public class ChessClient {
         return switch (cmd) {
             case "redraw-board" -> redrawBoard();
             case "resign" -> resign();
-//            case "leave-game" -> leaveGame();
+            case "leave-game" -> leaveGame();
             default -> gameHelp();
         };
     }
 
-//    private String leaveGame() {
-//
-//    }
+    private String leaveGame() {
+        try {
+            this.ws.enterGame(new UserGameCommand(
+                    UserGameCommand.CommandType.LEAVE,
+                    authToken,
+                    Integer.parseInt(gameNumber)));
+
+            this.ws.closeConnection();
+
+            gameNumber = null;
+            desiredTeam = null;
+            System.out.println("You have left the game. Returning to main menu.");
+
+            return "Bye bye!\n main menu:\n";
+        } catch (Exception e) {
+            System.out.println("An error occurred while leaving the game: " + e.getMessage());
+            return "Failed to leave the game.";
+        }
+    }
 
     private String resign() throws ResponseException {
         Scanner scanner = new Scanner(System.in);
@@ -102,7 +118,7 @@ public class ChessClient {
     private String gameHelp() {
         return """
                     - redraw-board
-                    - leave
+                    - leave-game
                     - make-move
                     - resign
                     - highlight-moves
@@ -169,7 +185,7 @@ public class ChessClient {
                         intGameID));
                 System.out.println(String.format("You joined game %s as %s", gameNumber, desiredTeam));
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
-                replLoop();
+                return replLoop();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid game number format: " + e.getMessage());
             } catch (NullPointerException e) {
@@ -187,9 +203,8 @@ public class ChessClient {
         while (true) {
             String input = scanner.nextLine().trim();
 
-            if (input.equalsIgnoreCase("leave")) {
-                System.out.println("Leaving the game...");
-                return "Left game.";
+            if (input.equalsIgnoreCase("leave-game")) {
+                return leaveGame();
             } else {
                 String commandResult = evalGamePlay(input);
                 if (!commandResult.isBlank()) {

@@ -99,8 +99,7 @@ public class Server {
             Spark.post("/game", createNewGameHandler::handle);
             Spark.put("/game", joinGameHandler::handle);
             Spark.get("/game", listGamesHandler::handle);
-            // make a websocket endpoint - add handler, add service or data access methods,
-
+//            Spark.delete("/game", deleteGameHandler::handle); if i have time i'll do this
 
             Spark.exception(ResponseException.class, this::exceptionHandler);
             Spark.exception(Exception.class, this::exceptionHandler);

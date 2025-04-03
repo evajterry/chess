@@ -90,4 +90,15 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
+    public void closeConnection() {
+        try {
+            if (this.session != null && this.session.isOpen()) {
+                this.session.close();
+                System.out.println("WebSocket connection closed.");
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to close WebSocket connection: " + e.getMessage());
+        }
+    }
+
 }

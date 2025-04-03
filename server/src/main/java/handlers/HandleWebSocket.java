@@ -49,13 +49,13 @@ public class HandleWebSocket {
         System.out.println("Received WebSocket message: " + message);
 
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+        String playerName = getPlayerNameFromAuthToken(command.getAuthToken(), command.getGameID()); // Method to determine player's name
 
         switch (command.getCommandType()) {
             case CONNECT:
                 activeSessions.put(session, command.getAuthToken());
                 sessionGameMap.put(session, command.getGameID());
 
-                String playerName = getPlayerNameFromAuthToken(command.getAuthToken(), command.getGameID()); // Method to determine player's name
                 String notificationMessage = String.format("User %s joined game %d as a player.", playerName, command.getGameID());
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
                 broadcastToGame(command.getGameID(), notification, session);
@@ -65,16 +65,21 @@ public class HandleWebSocket {
                 activeSessions.put(session, command.getAuthToken());
                 sessionGameMap.put(session, command.getGameID());
 
-                String observingPlayerName = authService.getUsernameFromAuthToken(command.getAuthToken());
-                String obsNotificationMessage = String.format("User %s is observing game %d.", observingPlayerName, command.getGameID());
+                String obsNotificationMessage = String.format("User %s is observing game %d.", playerName, command.getGameID());
                 ServerMessage obsNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, obsNotificationMessage);
                 broadcastToGame(command.getGameID(), obsNotification, session);
                 break;
             case LEAVE:
+                String leavingMessage = String.format("User %s has left the game '%d.'", playerName, command.getGameID());
+                ServerMessage leavingNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leavingMessage);
+                broadcastToGame(command.getGameID(), leavingNotification, session);
+                activeSessions.remove(session);
+                sessionGameMap.remove(session);
+                session.close();
                 break;
+
             case RESIGN:
-                String resPlayerName = authService.getUsernameFromAuthToken(command.getAuthToken());
-                String resignMessage = String.format("User %s has resigned from the game %d. The game is now over.", resPlayerName, command.getGameID());
+                String resignMessage = String.format("User %s has resigned from the game %d. The game is now over.", playerName, command.getGameID());
                 ServerMessage resignationNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignMessage);
                 broadcastToGame(command.getGameID(), resignationNotification, session);
                 break;
