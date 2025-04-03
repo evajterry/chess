@@ -5,6 +5,7 @@ import exception.ResponseException;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
+import javax.swing.*;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;

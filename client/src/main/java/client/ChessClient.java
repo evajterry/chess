@@ -73,8 +73,30 @@ public class ChessClient {
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
         return switch (cmd) {
             case "redraw-board" -> redrawBoard();
+            case "resign" -> resign();
+//            case "leave-game" -> leaveGame();
             default -> gameHelp();
         };
+    }
+
+//    private String leaveGame() {
+//
+//    }
+
+    private String resign() throws ResponseException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you sure you want to resign? <yes>|<no>");
+        String response = scanner.nextLine().trim().toLowerCase();
+        if (response.equals("yes")) {
+            this.ws.enterGame(new UserGameCommand(
+                    UserGameCommand.CommandType.RESIGN,
+                    authToken,
+                    Integer.parseInt(gameNumber)));
+
+            System.out.println("You have resigned from the game. The game is now over.");
+            return "you resigned!";
+        }
+        return "continue playing!";
     }
 
     private String gameHelp() {
@@ -147,21 +169,7 @@ public class ChessClient {
                         intGameID));
                 System.out.println(String.format("You joined game %s as %s", gameNumber, desiredTeam));
                 ui.ChessBoardUI.printChessBoard(desiredTeam);
-                Scanner scanner = new Scanner(System.in);
-                System.out.println("Type 'help' to see what you can do!");
-                while (true) {
-                    String input = scanner.nextLine().trim();
-
-                    if (input.equalsIgnoreCase("leave")) {
-                        System.out.println("Leaving the game...");
-                        return "Left game.";
-                    } else {
-                        String commandResult = evalGamePlay(input);
-                        if (!commandResult.isBlank()) {
-                            System.out.println(commandResult);
-                        }
-                    }
-                }
+                replLoop();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid game number format: " + e.getMessage());
             } catch (NullPointerException e) {
@@ -171,6 +179,24 @@ public class ChessClient {
             }
         }
         throw new ResponseException(400, "Expected: <gameNumber> <WHITE|BLACK>");
+    }
+
+    private String replLoop() throws ResponseException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Type 'help' to see what you can do!");
+        while (true) {
+            String input = scanner.nextLine().trim();
+
+            if (input.equalsIgnoreCase("leave")) {
+                System.out.println("Leaving the game...");
+                return "Left game.";
+            } else {
+                String commandResult = evalGamePlay(input);
+                if (!commandResult.isBlank()) {
+                    System.out.println(commandResult);
+                }
+            }
+        }
     }
 
     private void broadcastGameJoin(int actualGameID, String desiredTeam) {

@@ -58,7 +58,6 @@ public class HandleWebSocket {
                 String playerName = getPlayerNameFromAuthToken(command.getAuthToken(), command.getGameID()); // Method to determine player's name
                 String notificationMessage = String.format("User %s joined game %d as a player.", playerName, command.getGameID());
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, notificationMessage);
-
                 broadcastToGame(command.getGameID(), notification, session);
                 break;
 
@@ -69,11 +68,15 @@ public class HandleWebSocket {
                 String observingPlayerName = authService.getUsernameFromAuthToken(command.getAuthToken());
                 String obsNotificationMessage = String.format("User %s is observing game %d.", observingPlayerName, command.getGameID());
                 ServerMessage obsNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, obsNotificationMessage);
-
-                // Broadcast to other clients excluding current observer
                 broadcastToGame(command.getGameID(), obsNotification, session);
                 break;
             case LEAVE:
+                break;
+            case RESIGN:
+                String resPlayerName = authService.getUsernameFromAuthToken(command.getAuthToken());
+                String resignMessage = String.format("User %s has resigned from the game %d. The game is now over.", resPlayerName, command.getGameID());
+                ServerMessage resignationNotification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignMessage);
+                broadcastToGame(command.getGameID(), resignationNotification, session);
                 break;
         }
     }
