@@ -1,11 +1,13 @@
 package ui;
 
 import chess.ChessBoard;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Objects;
 
 import static chess.ChessBoard.getPieceSymbol;
@@ -22,7 +24,7 @@ public class ChessBoardUI {
     // Padded characters.
     private static final String EMPTY = "  ";
 
-    public static void printChessBoard(String teamColor) {
+    public static void printChessBoard(String teamColor, Collection<ChessPosition> highlightedPositions) {
         System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         BOARD.resetBoard();
@@ -30,7 +32,7 @@ public class ChessBoardUI {
         out.print(ERASE_SCREEN);
 
         drawHeaders(out, teamColor);
-        drawChessBoard(out, BOARD, teamColor);
+        drawChessBoard(out, BOARD, teamColor, highlightedPositions);
         drawHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);
@@ -80,10 +82,11 @@ public class ChessBoardUI {
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard chessBoard, String teamColor) {
+    private static void drawChessBoard(
+            PrintStream out, ChessBoard chessBoard, String teamColor, Collection<ChessPosition> highlightedPositions) {
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
-            drawRowOfSquares(out, boardRow, chessBoard, teamColor);
+            drawRowOfSquares(out, boardRow, chessBoard, teamColor, highlightedPositions);
 
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                 setBlack(out);
@@ -91,18 +94,23 @@ public class ChessBoardUI {
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, int row, ChessBoard chessBoard, String teamColor) {
+    private static void drawRowOfSquares(
+            PrintStream out, int row, ChessBoard chessBoard, String teamColor, Collection<ChessPosition> highlightedPositions) {
         int displayRow = teamColor.equalsIgnoreCase("BLACK") ? 7 - row : row;
         for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
                 drawRowHeader(out, 8 - displayRow, teamColor);
             } else {
-                out.print("   "); // Maintain alignment for empty rows
+                out.print("   ");
             }
 
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 int displayCol = teamColor.equalsIgnoreCase("BLACK") ? 7 - col : col;
-                setSquareColor(out, displayRow, displayCol);
+
+                ChessPosition currentPosition = new ChessPosition(displayRow + 1, displayCol + 1);
+                boolean isHighlighted = highlightedPositions != null && highlightedPositions.contains(currentPosition);
+
+                setSquareColor(out, displayRow, displayCol, isHighlighted);
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
                     ChessPiece piece = chessBoard.getPiece(new ChessPosition(displayRow + 1, displayCol + 1));
                     String pieceSymbol = (piece != null) ? getPieceSymbol(piece) : " ";
@@ -129,16 +137,20 @@ public class ChessBoardUI {
         out.print(" " + rowNum + " ");
     }
 
-    private static void setSquareColor(PrintStream out, int row, int col) {
+    private static void setSquareColor(PrintStream out, int row, int col, boolean isHighlighted) {
+        if (isHighlighted) {
+            out.print(SET_BG_COLOR_DARK_GREEN);  // Use the escape sequence for light blue here
+        } else {
+            if ((row + col) % 2 == 0) {
+                out.print(SET_BG_COLOR_WHITE);
+            } else {
+                out.print(SET_BG_COLOR_DARK_GREY);
+            }
+        }
         if (row == 0 || row == 1) {
             out.print(SET_TEXT_COLOR_MAGENTA);
         } else if (row == 6 || row == 7) {
             out.print(SET_TEXT_COLOR_BLUE);
-        }
-        if ((row + col) % 2 == 0) {
-            out.print(SET_BG_COLOR_WHITE);
-        } else {
-            out.print(SET_BG_COLOR_DARK_GREY);
         }
     }
 

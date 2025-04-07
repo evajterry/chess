@@ -1,16 +1,19 @@
 package client;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import client.apiclients.JoinGameRequest;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
-import handlers.HandleWebSocket;
 import model.AuthData;
 import model.UserData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ChessClient {
     private String username = null;
@@ -23,6 +26,7 @@ public class ChessClient {
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private final Map<Integer, Integer> gameMap = new HashMap<>();
+    private ChessGame chessGame;
 
     private WebSocketFacade ws;
     private final NotificationHandler notificationHandler;
@@ -32,6 +36,7 @@ public class ChessClient {
         this.ws = new WebSocketFacade(serverUrl, notificationHandler); // move
         this.serverUrl = serverUrl;
         this.notificationHandler = notificationHandler;
+        this.chessGame = new ChessGame();
     }
 
     public String preLogin() {
@@ -75,8 +80,46 @@ public class ChessClient {
             case "redraw-board" -> redrawBoard();
             case "resign" -> resign();
             case "leave-game" -> leaveGame();
+            case "highlight-moves" -> highlightMoves();
             default -> gameHelp();
         };
+    }
+
+    private String highlightMoves() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the position you want to check (example: 'e2'):");
+        String input = scanner.nextLine().trim();
+        ChessPosition startPosition = convertInputToChessPosition(input);
+        if (startPosition == null || chessGame.getBoard().getPiece(startPosition) == null) {
+            return "You either entered an invalid position or there is no piece here";
+        }
+        Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
+        if (validMoves == null || validMoves.isEmpty()) {
+            return "No valid moves for this piece.";
+        }
+        StringBuilder result = new StringBuilder("Valid moves: ");
+        for (ChessMove move : validMoves) {
+            result.append(move.getEndPosition()).append(" ");
+        }
+        System.out.println(result.toString().trim());
+        Collection<ChessPosition> highlightPositions = validMoves.stream()
+                .map(ChessMove::getEndPosition)
+                .collect(Collectors.toList());
+
+        ui.ChessBoardUI.printChessBoard(desiredTeam, highlightPositions);
+        return result.toString().trim();
+    }
+
+    private ChessPosition convertInputToChessPosition(String input) {
+        if (input.length() != 2) return null;
+        char letter = input.charAt(0);
+        char num = input.charAt(1);
+
+        if (letter < 'a' || letter > 'h' || num < '1' || num > '8') return null;
+        int row = Character.getNumericValue(num);
+        int col = letter - 'a' + 1;
+
+        return new ChessPosition(row, col);
     }
 
     private String leaveGame() {
@@ -126,7 +169,7 @@ public class ChessClient {
     }
 
     private String redrawBoard() {
-        ui.ChessBoardUI.printChessBoard(desiredTeam);
+        ui.ChessBoardUI.printChessBoard(desiredTeam, null);
         return " ";
     }
 
@@ -160,7 +203,7 @@ public class ChessClient {
             UserData user = new UserData(username, null, password);
             AuthData authData = server.login(user);
             authToken = authData.authToken();
-//            listGames();
+            listGames();
             return String.format("You signed in as %s", username); // should I connect this to the api?
         }
         throw new ResponseException(400, "Expected: <username> <password>");
@@ -184,7 +227,7 @@ public class ChessClient {
                         authToken,
                         intGameID));
                 System.out.println(String.format("You joined game %s as %s", gameNumber, desiredTeam));
-                ui.ChessBoardUI.printChessBoard(desiredTeam);
+                ui.ChessBoardUI.printChessBoard(desiredTeam, null);
                 return replLoop();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid game number format: " + e.getMessage());
@@ -235,7 +278,7 @@ public class ChessClient {
                         UserGameCommand.CommandType.OBSERVE,
                         authToken,
                         intGameID));
-                ui.ChessBoardUI.printChessBoard("WHITE");
+                ui.ChessBoardUI.printChessBoard("WHITE", null);
 
                 return String.format("You joined game %s as an observer", gameNumber);
             } catch (Exception e) {
