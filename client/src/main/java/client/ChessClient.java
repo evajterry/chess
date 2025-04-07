@@ -90,24 +90,34 @@ public class ChessClient {
         System.out.println("Enter the position you want to check (example: 'e2'):");
         String input = scanner.nextLine().trim();
         ChessPosition startPosition = convertInputToChessPosition(input);
+
         if (startPosition == null || chessGame.getBoard().getPiece(startPosition) == null) {
-            return "You either entered an invalid position or there is no piece here";
+            return "You either entered an invalid position or there is no piece here.";
         }
+
         Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
         if (validMoves == null || validMoves.isEmpty()) {
             return "No valid moves for this piece.";
         }
-        StringBuilder result = new StringBuilder("Valid moves: ");
-        for (ChessMove move : validMoves) {
-            result.append(move.getEndPosition()).append(" ");
-        }
-        System.out.println(result.toString().trim());
-        Collection<ChessPosition> highlightPositions = validMoves.stream()
-                .map(ChessMove::getEndPosition)
+
+        String validMovesNotation = validMoves.stream()
+                .map(move -> convertPositionToChessNotation(move.getEndPosition()))
+                .collect(Collectors.joining(", "));
+//        System.out.println("Valid moves: " + validMovesNotation);
+
+        Collection<ChessPosition> endPositions = validMoves.stream()
+                .map(ChessMove::getEndPosition)  // map each move to its end position
                 .collect(Collectors.toList());
 
-        ui.ChessBoardUI.printChessBoard(desiredTeam, highlightPositions);
-        return result.toString().trim();
+        ui.ChessBoardUI.printChessBoard(desiredTeam, endPositions);
+
+        return "Valid moves: " + validMovesNotation;
+    }
+
+    private String convertPositionToChessNotation(ChessPosition position) {
+        char file = (char) ('a' + position.getColumn() - 1); // convert column to letter
+        int rank = position.getRow(); // row remains as a number
+        return "" + file + rank;
     }
 
     private ChessPosition convertInputToChessPosition(String input) {
