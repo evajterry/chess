@@ -1,15 +1,13 @@
 package client;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import client.apiclients.JoinGameRequest;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
+import ui.ChessBoardUI;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -82,8 +80,105 @@ public class ChessClient {
             case "resign" -> resign();
             case "leave-game" -> leaveGame();
             case "highlight-moves" -> highlightMoves();
+            case "make-move" -> makeMoves();
             default -> gameHelp();
         };
+    }
+
+    private String makeMoves() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the position of the piece you want to move (example: 'e2'):");
+        String firstPos = scanner.nextLine().trim();
+        ChessPosition startPosition = convertInputToChessPosition(firstPos);
+
+        System.out.println("Enter the position of where you want the piece to go (example: 'e4'):");
+        String secondPos = scanner.nextLine().trim();
+        ChessPosition endPosition = convertInputToChessPosition(secondPos);
+
+        if (startValid(startPosition)) {
+            Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
+            System.out.println("ValidMoves" + validMoves);
+
+            String validMovesNotation = validMoves.stream()
+                    .map(move -> convertPositionToChessNotation(move.getEndPosition()))
+                    .collect(Collectors.joining(", "));
+            System.out.println("validMovesNotation: " + validMovesNotation);
+
+            Collection<ChessPosition> endPositions = validMoves.stream()
+                    .map(ChessMove::getEndPosition)
+                    .collect(Collectors.toList());
+
+            System.out.println("endPositions: " + endPositions);
+
+            if (endPositions.contains(endPosition)) {
+                System.out.println("endPositions contains endPosition! ");
+                updateChessGame(startPosition, endPosition);
+            }
+        }
+        return startPosition + " " + endPosition;
+    }
+
+    private void updateChessGame(ChessPosition startPosition, ChessPosition endPosition) {
+        ChessMove move = new ChessMove(startPosition, endPosition, null);
+        try {
+            chessGame.makeMove(move);
+        } catch (InvalidMoveException e) {
+            System.out.println("Invalid move: " + e.getMessage());
+            return;
+        }
+        ChessPiece piece = chessGame.getBoard().getPiece(endPosition);
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            boolean needsPromotion = (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getRow() == 1) ||
+                    (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8);
+            if (needsPromotion) {
+                promptForPromotion(endPosition, piece.getTeamColor());
+            }
+        }
+        ChessBoardUI.printUpdatedBoard(chessGame.getBoard(), desiredTeam);
+    }
+
+    private void promptForPromotion(ChessPosition endPosition, ChessGame.TeamColor teamColor) {
+        Scanner scanner = new Scanner(System.in);
+        ChessPiece.PieceType promotionType = null;
+        while (promotionType == null) {
+            System.out.println("Enter the promotion piece you want (options: QUEEN, ROOK, BISHOP, KNIGHT): ");
+            String promPiece = scanner.nextLine().trim().toUpperCase();
+            try {
+                promotionType = ChessPiece.PieceType.valueOf(promPiece);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid promotion type; please try again.");
+            }
+        }
+        chessGame.getBoard().addPiece(endPosition, new ChessPiece(teamColor, promotionType));
+        System.out.println("Pawn promoted to " + promotionType);
+    }
+
+    private boolean endValid(ChessPosition endPosition) {
+        return true;
+    }
+
+    private boolean startValid(ChessPosition startPosition) {
+        if (startPosition == null || chessGame.getBoard().getPiece(startPosition) == null) {
+            System.out.println("You either entered an invalid position or there is no piece here.");
+            return false;
+        }
+        ChessPiece piece = chessGame.getBoard().getPiece(startPosition);
+        if (piece == null) {
+            System.out.println("No piece at this position.");
+            return false;
+        }
+        ChessGame.TeamColor targetColor = piece.getTeamColor();
+        ChessGame.TeamColor playerTeamColor;
+        try {
+            playerTeamColor = ChessGame.TeamColor.valueOf(desiredTeam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid team designation.");
+            return false;
+        }
+        if (targetColor != playerTeamColor) {
+            System.out.println("The piece you selected isn't your team >:( ");
+        }
+        return true;
     }
 
     private String highlightMoves() {
@@ -92,44 +187,23 @@ public class ChessClient {
         String input = scanner.nextLine().trim();
         ChessPosition startPosition = convertInputToChessPosition(input);
 
-        if (startPosition == null || chessGame.getBoard().getPiece(startPosition) == null) {
-            return "You either entered an invalid position or there is no piece here.";
+        if (startValid(startPosition)) {
+            Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
+            if (validMoves == null || validMoves.isEmpty()) {
+                return "No valid moves for this piece.";
+            }
+            String validMovesNotation = validMoves.stream()
+                    .map(move -> convertPositionToChessNotation(move.getEndPosition()))
+                    .collect(Collectors.joining(", "));
+            Collection<ChessPosition> endPositions = validMoves.stream()
+                    .map(ChessMove::getEndPosition)  // map each move to its end position
+                    .collect(Collectors.toList());
+            ChessBoard board = chessGame.getBoard();
+            ui.ChessBoardUI.printChessBoard(desiredTeam, board, endPositions);
+
+            return "Valid moves: " + validMovesNotation;
         }
-
-        ChessPiece piece = chessGame.getBoard().getPiece(startPosition);
-        if (piece == null) {
-            return "No piece at this position.";
-        }
-        ChessGame.TeamColor targetColor = piece.getTeamColor();
-
-        ChessGame.TeamColor playerTeamColor;
-        try {
-            playerTeamColor = ChessGame.TeamColor.valueOf(desiredTeam.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return "Invalid team designation.";
-        }
-
-        if (targetColor != playerTeamColor) {
-            return "The piece you selected isn't your team >:( ";
-        }
-
-        Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
-        if (validMoves == null || validMoves.isEmpty()) {
-            return "No valid moves for this piece.";
-        }
-
-        String validMovesNotation = validMoves.stream()
-                .map(move -> convertPositionToChessNotation(move.getEndPosition()))
-                .collect(Collectors.joining(", "));
-//        System.out.println("Valid moves: " + validMovesNotation);
-
-        Collection<ChessPosition> endPositions = validMoves.stream()
-                .map(ChessMove::getEndPosition)  // map each move to its end position
-                .collect(Collectors.toList());
-
-        ui.ChessBoardUI.printChessBoard(desiredTeam, endPositions);
-
-        return "Valid moves: " + validMovesNotation;
+        return "Please enter correct positions.";
     }
 
     private String convertPositionToChessNotation(ChessPosition position) {
@@ -197,7 +271,8 @@ public class ChessClient {
     }
 
     private String redrawBoard() {
-        ui.ChessBoardUI.printChessBoard(desiredTeam, null);
+        ChessBoard board = chessGame.getBoard();
+        ui.ChessBoardUI.printChessBoard(desiredTeam, board, null);
         return " ";
     }
 
@@ -255,7 +330,8 @@ public class ChessClient {
                         authToken,
                         intGameID));
                 System.out.println(String.format("You joined game %s as %s", gameNumber, desiredTeam));
-                ui.ChessBoardUI.printChessBoard(desiredTeam, null);
+                ChessBoard board = chessGame.getBoard();
+                ui.ChessBoardUI.printChessBoard(desiredTeam, board, null);
                 return replLoop();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid game number format: " + e.getMessage());
@@ -306,7 +382,8 @@ public class ChessClient {
                         UserGameCommand.CommandType.OBSERVE,
                         authToken,
                         intGameID));
-                ui.ChessBoardUI.printChessBoard("WHITE", null);
+                ChessBoard board = chessGame.getBoard();
+                ui.ChessBoardUI.printChessBoard("WHITE", board, null);
 
                 return String.format("You joined game %s as an observer", gameNumber);
             } catch (Exception e) {

@@ -24,20 +24,23 @@ public class ChessBoardUI {
     // Padded characters.
     private static final String EMPTY = "  ";
 
-    public static void printChessBoard(String teamColor, Collection<ChessPosition> highlightedPositions) {
+    public static void printChessBoard(String teamColor, ChessBoard board, Collection<ChessPosition> highlightedPositions) {
         System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        BOARD.resetBoard();
 
         out.print(ERASE_SCREEN);
 
         drawHeaders(out, teamColor);
-        drawChessBoard(out, BOARD, teamColor, highlightedPositions);
+        drawChessBoard(out, board, teamColor, highlightedPositions);
         drawHeaders(out, teamColor);
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
 
+    }
+
+    public static void printUpdatedBoard(ChessBoard board, String teamColor) {
+        printChessBoard(teamColor, board, null);
     }
 
     private static void drawHeaders(PrintStream out, String teamColor) {
