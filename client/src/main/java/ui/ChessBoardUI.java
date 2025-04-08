@@ -70,6 +70,7 @@ public class ChessBoardUI {
         int suffixLength = 0;
 
         out.print(EMPTY.repeat(prefixLength));
+        out.print(SET_TEXT_COLOR_WHITE);
         printHeaderText(out, headerText);
         out.print(EMPTY.repeat(suffixLength));
     }
@@ -85,49 +86,71 @@ public class ChessBoardUI {
     private static void drawChessBoard(
             PrintStream out, ChessBoard chessBoard, String teamColor, Collection<ChessPosition> highlightedPositions) {
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
-
-            drawRowOfSquares(out, boardRow, chessBoard, teamColor, highlightedPositions);
-
+            int displayRow = (teamColor.equalsIgnoreCase("BLACK")) ? boardRow : BOARD_SIZE_IN_SQUARES - 1 - boardRow;
+            drawRowOfSquares(out, displayRow, chessBoard, teamColor, highlightedPositions);
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                 setBlack(out);
             }
         }
     }
+    private static void drawRowOfSquares(PrintStream out, int displayRow, ChessBoard chessBoard, String teamColor, Collection<ChessPosition> highlightedPositions) {
+        int actualRow = displayRow + 1; // Adjust due to 1-based indexing of rows
 
-    private static void drawRowOfSquares(
-            PrintStream out, int row, ChessBoard chessBoard, String teamColor, Collection<ChessPosition> highlightedPositions) {
-        int displayRow = teamColor.equalsIgnoreCase("BLACK") ? 7 - row : row;
         for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                drawRowHeader(out, 8 - displayRow, teamColor);
+                drawRowHeader(out, actualRow, teamColor);
             } else {
                 out.print("   ");
             }
 
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
-                int displayCol = teamColor.equalsIgnoreCase("BLACK") ? 7 - col : col;
+                int displayCol = (teamColor.equalsIgnoreCase("BLACK")) ? 7 - col : col;
 
-                ChessPosition currentPosition = new ChessPosition(displayRow + 1, displayCol + 1);
+                ChessPosition currentPosition = new ChessPosition(actualRow, displayCol + 1);
                 boolean isHighlighted = highlightedPositions != null && highlightedPositions.contains(currentPosition);
 
-                setSquareColor(out, displayRow, displayCol, isHighlighted);
+                setSquareColor(out, actualRow, displayCol, isHighlighted, teamColor);
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    ChessPiece piece = chessBoard.getPiece(new ChessPosition(displayRow + 1, displayCol + 1));
+                    ChessPiece piece = chessBoard.getPiece(currentPosition);
                     String pieceSymbol = (piece != null) ? getPieceSymbol(piece) : " ";
                     out.print("  " + pieceSymbol + "  ");
                 } else {
-                    out.print("     "); // Empty space
+                    out.print("     ");
                 }
-                setBlack(out); // Reset color after each square
+                setBlack(out);
             }
 
             if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                drawRowHeader(out, 8 - displayRow, teamColor); // Print row number on the right
+                drawRowHeader(out, actualRow, teamColor);
             } else {
-                out.print("   "); // Maintain alignment for empty rows
+                out.print("   ");
             }
-
             System.out.println();
+        }
+    }
+
+    private static void setSquareColor(PrintStream out, int row, int col, boolean isHighlighted, String teamColor) {
+        if (isHighlighted) {
+            out.print(SET_BG_COLOR_DARK_GREEN);
+        } else {
+            if ((row + col) % 2 == 0) {
+                out.print(SET_BG_COLOR_WHITE);
+            } else {
+                out.print(SET_BG_COLOR_DARK_GREY);
+            }
+        }
+        if (teamColor.equalsIgnoreCase("BLACK")) {
+            if (row <= 2) {
+                out.print(SET_TEXT_COLOR_BLUE);
+            } else if (row >= 7 && row <= 8) {
+                out.print(SET_TEXT_COLOR_MAGENTA);
+            }
+        } else {
+            if (row == 1 || row == 2) {
+                out.print(SET_TEXT_COLOR_BLUE);
+            } else if (row == 7 || row == 8) {
+                out.print(SET_TEXT_COLOR_MAGENTA);
+            }
         }
     }
 
@@ -136,24 +159,6 @@ public class ChessBoardUI {
         out.print(SET_TEXT_COLOR_WHITE);
         out.print(" " + rowNum + " ");
     }
-
-    private static void setSquareColor(PrintStream out, int row, int col, boolean isHighlighted) {
-        if (isHighlighted) {
-            out.print(SET_BG_COLOR_DARK_GREEN);  // Use the escape sequence for light blue here
-        } else {
-            if ((row + col) % 2 == 0) {
-                out.print(SET_BG_COLOR_WHITE);
-            } else {
-                out.print(SET_BG_COLOR_DARK_GREY);
-            }
-        }
-        if (row == 0 || row == 1) {
-            out.print(SET_TEXT_COLOR_MAGENTA);
-        } else if (row == 6 || row == 7) {
-            out.print(SET_TEXT_COLOR_BLUE);
-        }
-    }
-
 
     private static void setBlack(PrintStream out) {
         out.print(SET_BG_COLOR_BLACK);

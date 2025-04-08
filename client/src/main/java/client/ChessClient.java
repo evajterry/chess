@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.apiclients.JoinGameRequest;
 import client.websocket.NotificationHandler;
@@ -95,6 +96,23 @@ public class ChessClient {
             return "You either entered an invalid position or there is no piece here.";
         }
 
+        ChessPiece piece = chessGame.getBoard().getPiece(startPosition);
+        if (piece == null) {
+            return "No piece at this position.";
+        }
+        ChessGame.TeamColor targetColor = piece.getTeamColor();
+
+        ChessGame.TeamColor playerTeamColor;
+        try {
+            playerTeamColor = ChessGame.TeamColor.valueOf(desiredTeam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return "Invalid team designation.";
+        }
+
+        if (targetColor != playerTeamColor) {
+            return "The piece you selected isn't your team >:( ";
+        }
+
         Collection<ChessMove> validMoves = chessGame.validMoves(startPosition);
         if (validMoves == null || validMoves.isEmpty()) {
             return "No valid moves for this piece.";
@@ -116,7 +134,7 @@ public class ChessClient {
 
     private String convertPositionToChessNotation(ChessPosition position) {
         char file = (char) ('a' + position.getColumn() - 1); // convert column to letter
-        int rank = position.getRow(); // row remains as a number
+        int rank = position.getRow();
         return "" + file + rank;
     }
 
