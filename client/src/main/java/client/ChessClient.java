@@ -86,6 +86,16 @@ public class ChessClient {
     }
 
     private String makeMoves() {
+        try {
+            ChessGame.TeamColor playerTeamColor = ChessGame.TeamColor.valueOf(desiredTeam.toUpperCase());
+            if (chessGame.getTeamTurn() != playerTeamColor) {
+                System.out.println("It's the other player's turn to move~~");
+                return "Please wait for your turn";
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid team designation.");
+            return "Invalid team designation.";
+        }
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the position of the piece you want to move (example: 'e2'):");
         String firstPos = scanner.nextLine().trim();
@@ -121,20 +131,32 @@ public class ChessClient {
     private void updateChessGame(ChessPosition startPosition, ChessPosition endPosition) {
         ChessMove move = new ChessMove(startPosition, endPosition, null);
         try {
-            chessGame.makeMove(move);
+            ChessPiece piece = chessGame.getBoard().getPiece(startPosition);
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                boolean needsPromotion = (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getRow() == 1) ||
+                        (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8);
+                if (needsPromotion) {
+                    promptForPromotion(endPosition, piece.getTeamColor());
+                } else {
+                    chessGame.makeMove(move);
+                }
+            } else {
+                chessGame.makeMove(move);
+            }
         } catch (InvalidMoveException e) {
             System.out.println("Invalid move: " + e.getMessage());
             return;
         }
-        ChessPiece piece = chessGame.getBoard().getPiece(endPosition);
-        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            boolean needsPromotion = (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getRow() == 1) ||
-                    (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8);
-            if (needsPromotion) {
-                promptForPromotion(endPosition, piece.getTeamColor());
-            }
-        }
+        String moveDescription = String.format("Move from %s to %s", convertPositionToChessNotation(startPosition), convertPositionToChessNotation(endPosition));
+        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, moveDescription);
+        sendMessageToOthers(message);
         ChessBoardUI.printUpdatedBoard(chessGame.getBoard(), desiredTeam);
+    }
+
+    private void sendMessageToOthers(ServerMessage message) {
+        if (ws != null) {
+            ws.sendMessage(message);
+        }
     }
 
     private void promptForPromotion(ChessPosition endPosition, ChessGame.TeamColor teamColor) {

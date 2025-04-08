@@ -148,27 +148,4 @@ public class HandleWebSocket {
             }
         }
     }
-
 }
-
-//    public Object handle(Request req, Response res) throws ResponseException, DataAccessException {
-////        try {
-//            String authToken = req.headers("Authorization");
-//            var gameData = new Gson().fromJson(req.body(), GameData.class);
-//            int gameID = gameData.gameID();
-//            String reqTeam = gameData.blackUsername();
-//            if (reqTeam == null) {
-//                reqTeam = gameData.whiteUsername();
-//            }
-//            gameService.joinNewGame(authToken, gameID, reqTeam);
-////            List<Map<String, Object>> games = gameService.listGames(authToken);
-//            res.status(200);
-//
-////            return Serializer.listOfGames(games);
-//
-////        } catch (ResponseException e) {
-////            res.status(e.statusCode());
-////            return gson.toJson(new ErrorResponse(e.getMessage()));
-//        return "websocket handler? ";
-//    }
-//}
